@@ -210,16 +210,23 @@ def run_w29(page: Page, t, state: dict, force: bool = False) -> list[dict]:
     open_page(page, config.URL_W29)
     issue = text_of(page, "#warningTime")
     valid = text_of(page, "#validEnd")
+    content = text_of(page, "#WarnContent")
+    not_issued = "無發布" in content or "無發佈" in content
     county_light, table_note = _county_light(page)
+    if not_issued:
+        table_note = "網頁顯示「目前無發布」，發佈時間欄為網頁當下時間"
     towns, raw = _w29_towns(page)
     if not raw:
         raise RuntimeError("讀不到 Warning_63.js")
     towns = {d: towns.get(d, "無") for d in config.DISTRICTS}
 
-    version = short_hash([issue, county_light, towns])
+    # 無發布時，發佈時間會隨時變動，不能拿來判斷是否更新
+    version = short_hash(["無發布" if not_issued else issue, county_light, towns])
     st = state.setdefault("w29", {})
     changed = version != st.get("last_version")
     base = common.baseline_due(state, "w29", t)
+    if not_issued:
+        issue, valid = "目前無發布", ""
     kw = {"網頁發佈時間": issue, "網頁有效時間": valid}
     lit = [f"{d}{v}" for d, v in towns.items() if v != "無"]
     summary = f"臺北市：{county_light}；行政區：{'、'.join(lit) or '皆無燈號'}"
@@ -239,13 +246,13 @@ def run_w29(page: Page, t, state: dict, force: bool = False) -> list[dict]:
                      f"網頁發佈時間：{issue} ｜ 有效時間：{valid} ｜ {summary} ｜ 原因：{reason}")
     # 臺北市畫面（只有臺北市有燈號時才能選取）
     shot_tpe, note = "", "臺北市無燈號，地點切換中不可選取，以全縣市畫面為證"
-    try:
-        note = choose(page, "#CID", config.COUNTY)
-        shot_tpe = shoot(page, os.path.join(out, f"{stem}_臺北市.png"), t, config.URL_W29,
-                         f"網頁發佈時間：{issue} ｜ 有效時間：{valid} ｜ {summary} ｜ 原因：{reason}")
-    except RuntimeError as e:
-        if "無法選取" not in str(e):
-            note = f"選取臺北市失敗：{e}"
+    if county_light != "無" or lit:
+        try:
+            note = choose(page, "#CID", config.COUNTY)
+            shot_tpe = shoot(page, os.path.join(out, f"{stem}_臺北市.png"), t, config.URL_W29,
+                             f"網頁發佈時間：{issue} ｜ 有效時間：{valid} ｜ {summary} ｜ 原因：{reason}")
+        except RuntimeError as e:
+            note = f"選取臺北市失敗（以全縣市畫面為證）：{e}"
     evidence = save_text(os.path.join(out, f"{stem}_Warning_63.js.txt"), raw)
 
     rows = [base_row(t, SITE_W29, "縣市", config.COUNTY, 燈號_網頁=county_light,

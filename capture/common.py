@@ -59,20 +59,46 @@ def _find_cjk_font() -> str | None:
     return None
 
 
+def _wrap(draw, text: str, font, max_w: int) -> list[str]:
+    """超過畫面寬度時，優先在「 ｜ 」分隔處換行，必要時逐字換行。"""
+    out, cur = [], ""
+    for part in text.split(" ｜ "):
+        cand = f"{cur} ｜ {part}" if cur else part
+        if draw.textlength(cand, font=font) <= max_w:
+            cur = cand
+            continue
+        if cur:
+            out.append(cur)
+        cur = ""
+        for ch in part:
+            if draw.textlength(cur + ch, font=font) > max_w and cur:
+                out.append(cur)
+                cur = ""
+            cur += ch
+    if cur:
+        out.append(cur)
+    return out
+
+
 def watermark(png_path: str, lines: list[str]) -> None:
-    """在截圖最上方加一條時間資訊橫幅（不遮住原畫面）。"""
+    """在截圖最上方加一條時間資訊橫幅（不遮住原畫面），過長的文字自動換行。"""
     img = Image.open(png_path).convert("RGB")
     font_path = _find_cjk_font()
     size = 22
     font = ImageFont.truetype(font_path, size) if font_path else ImageFont.load_default()
+    measure = ImageDraw.Draw(img)
+    wrapped = []  # (文字, 是否為第一行)
+    for i, text in enumerate(lines):
+        for seg in _wrap(measure, text, font, img.width - 32):
+            wrapped.append((seg, i == 0))
     line_h = size + 10
-    band_h = line_h * len(lines) + 16
+    band_h = line_h * len(wrapped) + 16
     out = Image.new("RGB", (img.width, img.height + band_h), (20, 24, 33))
     out.paste(img, (0, band_h))
     draw = ImageDraw.Draw(out)
     y = 8
-    for i, text in enumerate(lines):
-        draw.text((16, y), text, font=font, fill=(255, 214, 0) if i == 0 else (235, 235, 235))
+    for text, first in wrapped:
+        draw.text((16, y), text, font=font, fill=(255, 214, 0) if first else (235, 235, 235))
         y += line_h
     out.save(png_path, optimize=True)
 
