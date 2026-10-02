@@ -1,0 +1,101 @@
+"""進入點。
+
+用法：
+  python -m capture.main --mode auto            # 依臺北時間自動判斷要做什麼（排程使用）
+  python -m capture.main --mode heat            # 高溫資訊 + 熱傷害
+  python -m capture.main --mode temptop-today   # 縣市溫度極值（今日）
+  python -m capture.main --mode temptop-yesterday
+  python -m capture.main --mode probe           # 探勘模式：存下頁面結構供除錯
+加上 --force 會忽略「無變化不截圖」直接截圖。
+"""
+import argparse
+import sys
+import traceback
+from datetime import timedelta
+
+from playwright.sync_api import sync_playwright
+
+from . import common, config, sites
+
+
+def decide(mode: str, t) -> str:
+    if mode != "auto":
+        return mode
+    if t.hour == 23 and t.minute >= 30:
+        return "temptop-today"
+    if t.hour in (0, 1):
+        return "temptop-yesterday"
+    return "heat"
+
+
+def with_retry(fn, label: str, errors: list[str]):
+    for attempt in range(config.RETRIES + 1):
+        try:
+            return fn()
+        except Exception as e:  # noqa: BLE001
+            print(f"[{label}] 第 {attempt + 1} 次失敗：{e}")
+            traceback.print_exc()
+            if attempt == config.RETRIES:
+                errors.append(f"{label}：{e}")
+    return None
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--mode", default="auto",
+                    choices=["auto", "heat", "temptop-today", "temptop-yesterday", "probe"])
+    ap.add_argument("--force", action="store_true")
+    args = ap.parse_args()
+
+    t = common.now()
+    mode = decide(args.mode, t)
+    print(f"臺北時間 {common.stamp(t)}，執行模式：{mode}")
+
+    today = t.strftime("%Y-%m-%d")
+    yesterday = (t - timedelta(days=1)).strftime("%Y-%m-%d")
+    common.pull_existing([today, yesterday])
+    state = common.load_state()
+    errors: list[str] = []
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        ctx = browser.new_context(viewport=config.VIEWPORT, locale="zh-TW",
+                                  timezone_id="Asia/Taipei", device_scale_factor=1)
+        page = ctx.new_page()
+
+        if mode == "probe":
+            folder = sites.probe(page, t)
+            print(f"探勘結果：{folder}")
+
+        elif mode in ("temptop-today", "temptop-yesterday"):
+            which = "今日" if mode == "temptop-today" else "昨日"
+            res = with_retry(lambda: sites.run_temptop(page, t, which), "縣市溫度極值", errors)
+            if res:
+                day, rows = res
+                common.append_rows(day, rows)
+
+        else:  # heat
+            rows = with_retry(lambda: sites.run_w29(page, t, state, args.force), "高溫資訊", errors) or []
+            common.append_rows(today, rows)
+            rows = with_retry(lambda: sites.run_health(page, t, state, args.force), "熱傷害", errors) or []
+            common.append_rows(today, rows)
+
+        # 失敗也寫一筆紀錄，證明這個時間點有執行
+        for err in errors:
+            common.append_rows(today, [{"記錄時間": common.stamp(t), "網站": err.split("：")[0],
+                                        "關鍵時段內": "是" if common.in_window(t) else "否",
+                                        "狀態": "失敗", "補充說明": err[:500]}])
+        browser.close()
+
+    common.save_state(state)
+    uploaded = common.push_all()
+
+    if errors or not uploaded:
+        print("有錯誤，請查看上方訊息：", errors)
+        return 1
+    print("完成")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

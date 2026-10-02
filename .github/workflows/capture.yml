@@ -1,0 +1,75 @@
+name: 氣象截圖
+
+on:
+  schedule:
+    # GitHub 的排程一律是 UTC 時間，臺北時間 = UTC + 8
+    - cron: "40 23 * * *"     # 臺北 07:40（7:30 定時更新後）
+    - cron: "45 0 * * *"      # 臺北 08:45
+    - cron: "*/15 1-6 * * *"  # 臺北 09:00–14:45 每 15 分鐘（關鍵時段）
+    - cron: "45 9 * * *"      # 臺北 17:45（17:30 發布隔日高溫資訊後）
+    - cron: "55 15 * * *"     # 臺北 23:55 縣市溫度極值（今日）
+    - cron: "30 16 * * *"     # 臺北 00:30 縣市溫度極值（昨日，定案版）
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "執行模式"
+        type: choice
+        default: auto
+        options: [auto, heat, temptop-today, temptop-yesterday, probe]
+      force:
+        description: "忽略「無變化」直接截圖"
+        type: boolean
+        default: false
+
+concurrency:
+  group: capture
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      TZ: Asia/Taipei
+      CWA_API_KEY: ${{ secrets.CWA_API_KEY }}
+      RCLONE_CONFIG_GDRIVE_TYPE: drive
+      RCLONE_CONFIG_GDRIVE_SCOPE: drive
+      RCLONE_CONFIG_GDRIVE_TOKEN: ${{ secrets.GDRIVE_TOKEN }}
+      RCLONE_CONFIG_GDRIVE_ROOT_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+      DISTRICT_SCREENSHOTS: ${{ vars.DISTRICT_SCREENSHOTS || 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: 安裝 Python 套件
+        run: pip install -r requirements.txt
+
+      - name: 安裝中文字型與 rclone
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
+          curl -fsSL https://rclone.org/install.sh | sudo bash
+
+      - name: 快取瀏覽器
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ hashFiles('requirements.txt') }}
+
+      - name: 安裝瀏覽器
+        run: python -m playwright install --with-deps chromium
+
+      - name: 截圖並上傳 Google Drive
+        run: python -m capture.main --mode "${{ inputs.mode || 'auto' }}" ${{ inputs.force && '--force' || '' }}
+
+      - name: 保留本次輸出（失敗或探勘模式時，保存 7 天供除錯）
+        if: failure() || inputs.mode == 'probe'
+        uses: actions/upload-artifact@v4
+        with:
+          name: output-${{ github.run_id }}
+          path: out/
+          retention-days: 7
