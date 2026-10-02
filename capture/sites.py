@@ -189,7 +189,8 @@ def _w29_towns(page: Page) -> tuple[dict[str, str], str]:
     return lights, raw
 
 
-def _county_light(page: Page) -> str:
+def _county_light(page: Page) -> tuple[str, str]:
+    """回傳 (臺北市燈號, 備註)。高溫資訊過期或未發布時，網頁不會顯示燈號表。"""
     title = page.evaluate(
         """(code) => { const td = document.querySelector('td[data-name="C' + code + '"]');
                        if (!td) return null;
@@ -197,11 +198,11 @@ def _county_light(page: Page) -> str:
         COUNTY_CODE,
     )
     if title is None:
-        raise RuntimeError("找不到臺北市燈號欄位 td[data-name=C63]")
+        return "無", "網頁目前沒有燈號表（未發布或已過有效時間）"
     for c in ("紅色", "橙色", "黃色"):
         if c in title:
-            return c
-    return "無"
+            return c, ""
+    return "無", ""
 
 
 def run_w29(page: Page, t, state: dict, force: bool = False) -> list[dict]:
@@ -209,10 +210,11 @@ def run_w29(page: Page, t, state: dict, force: bool = False) -> list[dict]:
     open_page(page, config.URL_W29)
     issue = text_of(page, "#warningTime")
     valid = text_of(page, "#validEnd")
-    county_light = _county_light(page)
+    county_light, table_note = _county_light(page)
     towns, raw = _w29_towns(page)
-    if not towns:
-        raise RuntimeError("讀不到 Warning_63.js 的行政區資料")
+    if not raw:
+        raise RuntimeError("讀不到 Warning_63.js")
+    towns = {d: towns.get(d, "無") for d in config.DISTRICTS}
 
     version = short_hash([issue, county_light, towns])
     st = state.setdefault("w29", {})
@@ -221,6 +223,8 @@ def run_w29(page: Page, t, state: dict, force: bool = False) -> list[dict]:
     kw = {"網頁發佈時間": issue, "網頁有效時間": valid}
     lit = [f"{d}{v}" for d, v in towns.items() if v != "無"]
     summary = f"臺北市：{county_light}；行政區：{'、'.join(lit) or '皆無燈號'}"
+    if table_note:
+        summary += f"（{table_note}）"
 
     if not (changed or base or force):
         return [base_row(t, SITE_W29, "縣市", config.COUNTY, 燈號_網頁=county_light,
@@ -275,8 +279,11 @@ def run_w29(page: Page, t, state: dict, force: bool = False) -> list[dict]:
 
 
 # ================================================================== 網站三：健康氣象（熱傷害）
+HEALTH_STATUS = {0: "無", 1: "注意", 2: "警戒", 3: "危險", 4: "高風險"}
+
+
 def _window_entries(entries: list[dict], day: str) -> list[dict]:
-    """取當天、時段起點落在 9–14 時的逐三小時預報（通常是 09 時與 12 時兩段）。"""
+    """取當天、時段起點落在 9–14 時的逐三小時資料（通常是 09 時與 12 時兩段）。"""
     sel = []
     for e in entries:
         if not e["time"].startswith(day):
@@ -294,22 +301,38 @@ def _fmt(entries: list[dict]) -> str:
     return " / ".join(f"{e['time'][11:16]} {e['warning'] or '無'}({e['index']})" for e in entries)
 
 
+def _page_health(page_json: dict[str, str]) -> tuple[dict, dict, dict]:
+    """解析網頁自己載入的兩份 JSON，回傳 (今日燈號 {區: 燈號}, 逐三小時 {區: [...]}, 臺北市子集)。"""
+    today, slots, subset = {}, {}, {}
+    try:
+        wt = json.loads(page_json.get("getWarnTown_HD.json", "{}"))
+        for grp in wt.get("getWarnTown", []):
+            for x in grp.get("warnDatas", []):
+                if x.get("cityName") == config.COUNTY:
+                    today[x["townName"]] = HEALTH_STATUS.get(x.get("warnStatus"), str(x.get("warnStatus")))
+                    subset.setdefault("getWarnTown", []).append(x)
+    except (ValueError, KeyError):
+        pass
+    try:
+        rf = json.loads(page_json.get("getUserRiskForecast_HD.json", "{}"))
+        subset["dailyHealthUpdateTime"] = rf.get("dailyHealthUpdateTime")
+        for x in rf.get("getUserRiskForecast", []):
+            if x.get("city") == config.COUNTY and x.get("healthName", "熱傷害") == "熱傷害":
+                slots[x["town"]] = [{"time": (e.get("dt") or "")[:16], "index": e.get("wbgt", ""),
+                                     "warning": "" if not e.get("warnStatus")
+                                     else HEALTH_STATUS.get(e["warnStatus"], str(e["warnStatus"]))}
+                                    for e in x.get("dailyHealth", [])]
+                subset.setdefault("getUserRiskForecast", []).append(x)
+    except (ValueError, KeyError):
+        pass
+    return today, slots, subset
+
+
 def run_health(page: Page, t, state: dict, force: bool = False) -> list[dict]:
     day = t.strftime("%Y-%m-%d")
     st = state.setdefault("health", {})
 
-    # 1) API：各行政區 09–14 時的熱傷害燈號
-    per_district: dict[str, list[dict]] = {}
-    api_err = ""
-    if config.CWA_API_KEY:
-        try:
-            data = api.taipei_heat_injury()
-            for d in config.DISTRICTS:
-                per_district[d] = _window_entries(data.get(d, []), day)
-        except Exception as e:  # noqa: BLE001
-            api_err = f"API失敗：{e}"
-
-    # 2) 網頁：同時把網頁自己載入的燈號資料 JSON 留存當佐證
+    # 1) 網頁：開頁時攔下網頁自己載入的燈號資料
     page_json: dict[str, str] = {}
 
     def keep(resp):
@@ -326,44 +349,64 @@ def run_health(page: Page, t, state: dict, force: bool = False) -> list[dict]:
     finally:
         page.remove_listener("response", keep)
     updated = labeled_time(page, "更新時間")
+    today, slots, subset = _page_health(page_json)
+    if not today and not slots:
+        raise RuntimeError("讀不到健康氣象網頁的燈號資料（getWarnTown / getUserRiskForecast）")
+    win = {d: _window_entries(slots.get(d, []), day) for d in config.DISTRICTS}
 
-    version = short_hash(per_district) if per_district else short_hash([updated, page_json])
+    # 2) API（核對用）
+    api_win: dict[str, list[dict]] = {}
+    api_err = ""
+    if config.CWA_API_KEY:
+        try:
+            data = api.taipei_heat_injury()
+            api_win = {d: _window_entries(data.get(d, []), day) for d in config.DISTRICTS}
+        except Exception as e:  # noqa: BLE001
+            api_err = f"API核對失敗：{e}"
+
+    version = short_hash([today, win])
     changed = version != st.get("last_version")
     base = common.baseline_due(state, "health", t)
-    all_entries = [e for v in per_district.values() for e in v]
-    county_light = api.worst_warning(all_entries) if per_district else ""
+    rank = list(HEALTH_STATUS.values())
+    county_today = max((today.get(d, "無") for d in config.DISTRICTS), key=rank.index)
+    county_win = api.worst_warning([e for v in win.values() for e in v]) if any(win.values()) else ""
+    lit = [f"{d}{today[d]}" for d in config.DISTRICTS if today.get(d, "無") != "無"]
+    summary = f"今日燈號：{'、'.join(lit) or '臺北市各區皆無'}"
     kw = {"網頁發佈時間": updated}
 
     if not (changed or base or force):
-        return [base_row(t, SITE_HEALTH, "縣市", config.COUNTY, 燈號_API=county_light,
-                         狀態="檢查-無變化", 補充說明=f"與上次相同（網頁更新時間 {updated}）", **kw)]
+        return [base_row(t, SITE_HEALTH, "縣市", config.COUNTY, 燈號_網頁=county_today,
+                         狀態="檢查-無變化", 補充說明=f"與上次相同（網頁更新時間 {updated}）；{summary}", **kw)]
 
-    reason = "手動強制" if force else ("資料更新" if changed else f"基準截圖{base}時")
+    reason = "手動強制" if force else ("燈號資料更新" if changed else f"基準截圖{base}時")
     out = common.site_dir(day, SITE_HEALTH)
     stem = f"{t:%H%M}_熱傷害"
-    for name, text in page_json.items():
-        save_text(os.path.join(out, f"{stem}_{name}"), text)
+    evidence = save_text(os.path.join(out, f"{stem}_臺北市資料.json"),
+                         json.dumps(subset, ensure_ascii=False, indent=1))
 
     shot = shoot(page, os.path.join(out, f"{stem}_臺北市.png"), t, config.URL_HEALTH,
-                 f"網頁更新時間：{updated} ｜ 地區：臺北市 ｜ 9–14時最高燈號(API)：{county_light or '未取得'} ｜ 原因：{reason}")
-    rows = [base_row(t, SITE_HEALTH, "縣市", config.COUNTY, 燈號_API=county_light, 截圖檔名=shot, 狀態="已截圖",
-                     補充說明="；".join(x for x in (reason, note, api_err) if x), **kw)]
+                 f"網頁更新時間：{updated} ｜ {summary} ｜ 原因：{reason}")
+    rows = [base_row(t, SITE_HEALTH, "縣市", config.COUNTY, 燈號_網頁=county_today,
+                     燈號_API=county_win and f"9–14時最高：{county_win}",
+                     截圖檔名=shot, 狀態="已截圖",
+                     補充說明="；".join(x for x in (reason, "縣市燈號取各區最高", note,
+                                                  f"資料檔 {evidence}", api_err) if x), **kw)]
 
     for d in config.DISTRICTS:
-        entries = per_district.get(d, [])
-        light = api.worst_warning(entries) if entries else ""
+        entries = win.get(d, [])
         dshot, dnote, status = "", "", "已記錄"
         if config.DISTRICT_SCREENSHOTS:
             try:
                 dnote = click_text(page, d)
                 dshot = shoot(page, os.path.join(out, f"{stem}_臺北市{d}.png"), t, config.URL_HEALTH,
-                              f"網頁更新時間：{updated} ｜ 地區：臺北市{d} ｜ "
-                              f"{_fmt(entries) or '未取得API資料'} ｜ 原因：{reason}")
+                              f"網頁更新時間：{updated} ｜ 臺北市{d} 今日燈號：{today.get(d, '未知')} ｜ "
+                              f"9–14時：{_fmt(entries) or '已過時段或無資料'} ｜ 原因：{reason}")
                 status = "已截圖"
             except Exception as e:  # noqa: BLE001
                 dnote, status = f"行政區截圖失敗：{e}", "已記錄-截圖失敗"
-        rows.append(base_row(t, SITE_HEALTH, "行政區", f"{config.COUNTY}{d}", 燈號_API=light,
-                             數值=_fmt(entries), 截圖檔名=dshot, 狀態=status,
+        api_light = api.worst_warning(api_win[d]) if api_win.get(d) else ""
+        rows.append(base_row(t, SITE_HEALTH, "行政區", f"{config.COUNTY}{d}", 燈號_網頁=today.get(d, ""),
+                             燈號_API=api_light, 數值=_fmt(entries), 截圖檔名=dshot, 狀態=status,
                              補充說明="；".join(x for x in (reason, dnote) if x), **kw))
 
     st["last_version"] = version

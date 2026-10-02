@@ -109,7 +109,7 @@ def taipei_heat_injury() -> dict[str, list[dict]]:
     return _walk_locations(data.get("records", {}))
 
 
-WARN_RANK = {"": 0, "注意": 1, "警戒": 2, "危險": 3, "高危險": 4}
+WARN_RANK = {"": 0, "無": 0, "注意": 1, "警戒": 2, "危險": 3, "高危險": 4, "高風險": 4}
 
 
 def worst_warning(entries: list[dict]) -> str:
