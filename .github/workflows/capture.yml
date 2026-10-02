@@ -44,6 +44,7 @@ jobs:
       RCLONE_CONFIG_GDRIVE_TOKEN: ${{ secrets.GDRIVE_TOKEN }}
       RCLONE_CONFIG_GDRIVE_ROOT_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
       DISTRICT_SCREENSHOTS: ${{ vars.DISTRICT_SCREENSHOTS || 'true' }}
+      ALLOW_NO_UPLOAD: ${{ inputs.debug && '1' || '' }}
     steps:
       - uses: actions/checkout@v4
 

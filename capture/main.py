@@ -9,6 +9,7 @@
 加上 --force 會忽略「無變化不截圖」直接截圖。
 """
 import argparse
+import os
 import sys
 import traceback
 from datetime import timedelta
@@ -89,6 +90,8 @@ def main() -> int:
 
     common.save_state(state)
     uploaded = common.push_all()
+    if not common.rclone_available() and mode != "probe" and not os.environ.get("ALLOW_NO_UPLOAD"):
+        errors.append("尚未設定 Google Drive（GDRIVE_TOKEN / GDRIVE_FOLDER_ID），本次結果沒有存檔")
 
     if errors or not uploaded:
         print("有錯誤，請查看上方訊息：", errors)
