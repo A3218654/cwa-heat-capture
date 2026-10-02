@@ -20,6 +20,10 @@ on:
         description: "忽略「無變化」直接截圖"
         type: boolean
         default: false
+      debug:
+        description: "把本次輸出推到 probe-results 分支（測試用）"
+        type: boolean
+        default: false
 
 concurrency:
   group: capture
@@ -77,10 +81,10 @@ jobs:
           path: out/
           retention-days: 7
 
-      - name: 探勘結果推到 probe-results 分支
-        if: always() && inputs.mode == 'probe'
+      - name: 測試輸出推到 probe-results 分支
+        if: always() && (inputs.mode == 'probe' || inputs.debug)
         run: |
-          mkdir -p /tmp/pr && cp -r out/_probe/. /tmp/pr/
+          mkdir -p /tmp/pr && cp -r out/. /tmp/pr/ && cp -r state /tmp/pr/_state 2>/dev/null || true
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout --orphan probe-results
@@ -88,5 +92,5 @@ jobs:
           find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
           cp -r /tmp/pr/. .
           git add -A
-          git commit -m "probe ${{ github.run_id }}"
+          git commit -m "debug ${{ github.run_id }}"
           git push -f origin probe-results

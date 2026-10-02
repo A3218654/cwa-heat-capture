@@ -1,12 +1,17 @@
 """三個網站的抓取邏輯（Playwright 同步版）。
 
-網頁元素沒有固定 id，因此「點選臺北市」採多種策略依序嘗試，
-並把成功的策略寫進 CSV 的「補充說明」，方便日後網站改版時排查。
+選取方式依 2026-10-02 在 GitHub 雲端機器上實測的網頁結構撰寫：
+- 縣市溫度極值：#SDay（今日/昨日/前日）、#STemp（高溫/低溫）、tbody#CountyTemp_MOD
+- 高溫資訊：#warningTime、#validEnd、#CID（地點切換，無燈號的縣市會被停用）、
+  td[data-name="C63"]（臺北市燈號），各行政區燈號來自 /Data/js/warn/Warning_63.js
+- 健康氣象：頁面上唯一的 <select>（選擇縣市）＋各行政區按鈕、「更新時間」
+找不到預期元素時，會退回通用的文字比對方式，並寫進 CSV 的「補充說明」。
 """
 import hashlib
 import json
 import os
 import re
+from datetime import timedelta
 
 import requests
 from playwright.sync_api import Page
@@ -16,6 +21,11 @@ from . import api, common, config
 SITE_TEMPTOP = "1_縣市溫度極值"
 SITE_W29 = "2_高溫資訊"
 SITE_HEALTH = "3_熱傷害"
+
+COUNTY_CODE = "63"
+# 臺北市各行政區代碼（與 config.DISTRICTS 順序相同）：6300100 松山區 … 6301200 北投區
+TOWN_CODES = {f"63{i:03d}00": d for i, d in enumerate(config.DISTRICTS, start=1)}
+W29_LEVEL = {"W29-1": "黃色", "W29-2": "橙色", "W29-3": "紅色", "W29": "黃色"}
 
 
 # ================================================================== 共用網頁操作
@@ -32,121 +42,56 @@ def settle(page: Page, extra_ms: int = 1500) -> None:
     page.wait_for_timeout(extra_ms)
 
 
-def select_area(page: Page, names: list[str]) -> str:
-    """依序嘗試多種方式點選地區，回傳成功的策略名稱；全部失敗則丟出例外。"""
-    for name in names:
-        # 1. 下拉選單 <select>
-        for sel in page.locator("select").all():
-            try:
-                opts = [o.strip() for o in sel.locator("option").all_inner_texts()]
-            except Exception:  # noqa: BLE001
-                continue
-            if name in opts:
-                sel.select_option(label=name)
-                settle(page)
-                return f"下拉選單:{name}"
-        # 2. 畫面上看得到、文字完全相同的元素（優先可點的連結與按鈕）
-        loc = page.get_by_text(name, exact=True)
-        candidates = []
-        for i in range(min(loc.count(), 30)):
-            el = loc.nth(i)
-            try:
-                if not el.is_visible():
-                    continue
-                tag = el.evaluate("e => e.tagName.toLowerCase()")
-            except Exception:  # noqa: BLE001
-                continue
-            if tag in ("td", "th"):
-                continue  # 表格內的文字不是選單，點了也不會切換地區
-            priority = 0 if tag in ("a", "button", "li", "option", "label") else 1
-            candidates.append((priority, i))
-        for _, i in sorted(candidates):
-            try:
-                loc.nth(i).click(timeout=5_000)
-                settle(page)
-                return f"文字點擊:{name}"
-            except Exception:  # noqa: BLE001
-                continue
-        # 3. title / aria-label 屬性（常見於 SVG 地圖）
-        for css in (f'[title="{name}"]', f'[aria-label="{name}"]', f'[data-name="{name}"]'):
-            loc = page.locator(css)
-            for i in range(min(loc.count(), 10)):
-                try:
-                    loc.nth(i).click(timeout=5_000, force=True)
-                    settle(page)
-                    return f"屬性點擊:{css}"
-                except Exception:  # noqa: BLE001
-                    continue
-        # 4. 隱藏在收合選單裡的項目：直接用 JavaScript 觸發點擊
-        ok = page.evaluate(
-            """(name) => {
-                const els = [...document.querySelectorAll('a,li,button,span,div,label,path,g,text')];
-                const el = els.find(e => (e.textContent || '').trim() === name
-                                      || e.getAttribute('title') === name
-                                      || e.getAttribute('data-name') === name);
-                if (!el) return false;
-                el.dispatchEvent(new MouseEvent('click', {bubbles: true}));
-                return true;
-            }""",
-            name,
-        )
-        if ok:
+def choose(page: Page, css: str, label: str) -> str:
+    """在指定的下拉選單選擇文字開頭為 label 的選項（選項可能帶有「(橙色燈號)」等後綴）。"""
+    sel = page.locator(css)
+    if sel.count() == 0:
+        raise RuntimeError(f"找不到下拉選單 {css}")
+    opts = sel.first.locator("option")
+    for i in range(opts.count()):
+        o = opts.nth(i)
+        text = o.inner_text().strip()
+        if text == label or text.startswith(label + " ") or text.startswith(label + "("):
+            if o.get_attribute("disabled") is not None:
+                raise RuntimeError(f"{css} 的「{text}」目前無法選取")
+            sel.first.select_option(index=i)
             settle(page)
-            return f"JS點擊:{name}"
-    raise RuntimeError(f"找不到可點選的地區：{names}")
+            return f"{css}:{text}"
+    raise RuntimeError(f"{css} 沒有「{label}」選項")
 
 
-def table_rows(page: Page) -> list[list[str]]:
-    """讀出頁面上所有表格列；每格包含文字、圖片 alt/title 與 class，用來判斷燈號顏色。"""
-    return page.evaluate(
-        """() => [...document.querySelectorAll('table tr')].map(tr =>
-            [...tr.querySelectorAll('td,th')].map(td => {
-                const parts = [td.innerText.trim()];
-                td.querySelectorAll('img,span,i,div').forEach(e => {
-                    ['alt','title','class'].forEach(a => { const v = e.getAttribute(a); if (v) parts.push(v); });
-                    const bg = getComputedStyle(e).backgroundColor;
-                    if (bg && bg !== 'rgba(0, 0, 0, 0)') parts.push('bg:' + bg);
-                });
-                const cls = td.getAttribute('class'); if (cls) parts.push(cls);
-                return parts.join(' | ');
-            }))"""
-    )
-
-
-LIGHT_WORDS = [
-    ("紅色", ("紅", "red", "rgb(255, 0, 0)", "rgb(230, 0, 18)")),
-    ("橙色", ("橙", "橘", "orange", "rgb(255, 165, 0)", "rgb(255, 128, 0)")),
-    ("黃色", ("黃", "yellow", "rgb(255, 255, 0)")),
-]
-
-
-def light_of(text: str) -> str:
-    low = text.lower()
-    for name, words in LIGHT_WORDS:
-        if any(w in low for w in words):
-            return name
-    return "無"
-
-
-def find_row(rows: list[list[str]], name: str, exact: bool = False) -> list[str] | None:
-    for r in rows:
-        if not r:
+def click_text(page: Page, name: str) -> str:
+    """通用備援：點擊畫面上文字完全相同的按鈕或連結（略過表格內文字）。"""
+    loc = page.get_by_role("button", name=name, exact=True)
+    if loc.count() == 0:
+        loc = page.get_by_text(name, exact=True)
+    for i in range(min(loc.count(), 30)):
+        el = loc.nth(i)
+        try:
+            if not el.is_visible():
+                continue
+            if el.evaluate("e => !!e.closest('table')"):
+                continue
+            el.click(timeout=5_000)
+            settle(page, 1000)
+            return f"點擊:{name}"
+        except Exception:  # noqa: BLE001
             continue
-        first = r[0].split(" | ")[0].strip()
-        if (first == name) if exact else (name in first):
-            return r
-    return None
+    raise RuntimeError(f"找不到可點選的「{name}」")
+
+
+def text_of(page: Page, css: str) -> str:
+    loc = page.locator(css)
+    return loc.first.inner_text().strip() if loc.count() else ""
 
 
 def labeled_time(page: Page, label: str) -> str:
-    """讀取「發佈時間：…」這類欄位的整行文字（有效時間通常是一段區間）。"""
+    """讀取「更新時間 …」「發佈時間：…」這類欄位的整行文字。"""
     text = page.inner_text("body")
-    m = re.search(label + r"[：:][ \t]*([^\n]{1,60})", text)
+    m = re.search(label + r"[：:]?[ \t]*([0-9][^\n]{0,40})", text)
     if not m:
         return ""
-    value = m.group(1).strip()
-    # 同一行若接著別的欄位（例如「有效時間：」），只保留本欄位
-    value = re.split(r"\s*(?:發佈時間|發布時間|有效時間|更新時間)[：:]", value)[0]
+    value = re.split(r"\s*(?:發佈時間|發布時間|有效時間|更新時間)[：:]?", m.group(1))[0]
     return value.strip()
 
 
@@ -157,6 +102,12 @@ def shoot(page: Page, path: str, t, url: str, extra: str) -> str:
         f"來源：{url}",
         extra,
     ])
+    return os.path.basename(path)
+
+
+def save_text(path: str, text: str) -> str:
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(text)
     return os.path.basename(path)
 
 
@@ -176,25 +127,31 @@ def base_row(t, site: str, level: str, area: str, **kw) -> dict:
 # ================================================================== 網站一：縣市溫度極值
 def run_temptop(page: Page, t, which: str) -> tuple[str, list[dict]]:
     """which = '今日' 或 '昨日'。回傳 (資料日期, CSV 列)。"""
-    from datetime import timedelta
-
     day = (t if which == "今日" else t - timedelta(days=1)).strftime("%Y-%m-%d")
     open_page(page, config.URL_TEMPTOP)
-    notes = [select_area(page, [which]), select_area(page, ["高溫"])]
-    try:
-        page.wait_for_function(
-            "() => [...document.querySelectorAll('table tr')].some(tr => tr.innerText.includes('臺北市'))",
-            timeout=20_000,
-        )
-    except Exception:  # noqa: BLE001
-        notes.append("表格未出現臺北市")
-    row = find_row(table_rows(page), config.COUNTY, exact=True)
-    cells = [c.split(" | ")[0] for c in row] if row else []
-    temp, obs_time, station = (cells + ["", "", "", ""])[1:4] if cells else ("", "", "")
+    notes = [choose(page, "#SDay", which), choose(page, "#STemp", "高溫")]
+    page.wait_for_function(
+        """(which) => { const tr = document.querySelector('#CountyTemp_MOD tr');
+                        return tr && (tr.dataset.subtitle || '').includes(which); }""",
+        arg=which, timeout=20_000,
+    )
+    info = page.evaluate(
+        """(county) => {
+            const first = document.querySelector('#CountyTemp_MOD tr');
+            const row = [...document.querySelectorAll('#CountyTemp_MOD tr')]
+                .find(tr => (tr.querySelector('th')?.innerText || '').trim() === county);
+            const cells = row ? [...row.querySelectorAll('td')].map(td => td.innerText.trim()) : [];
+            return {subtitle: first?.dataset.subtitle || '', from: first?.dataset.timefrom || '',
+                    to: first?.dataset.timeto || '', updated: first?.dataset.updatetime || '', cells};
+        }""",
+        config.COUNTY,
+    )
+    temp, obs_time, station, station_id, place = (info["cells"] + [""] * 5)[:5]
 
     fname = f"{t:%H%M}_縣市溫度極值_{which}_高溫.png"
     shot = shoot(page, os.path.join(common.site_dir(day, SITE_TEMPTOP), fname), t, config.URL_TEMPTOP,
-                 f"資料日期：{day}（{which}）｜臺北市最高溫 {temp}°C ｜ 觀測時間 {obs_time} ｜ 測站 {station}")
+                 f"{info['subtitle']}（{info['from']}～{info['to']}）｜臺北市 {temp}°C ｜ {obs_time} ｜ "
+                 f"{station}（{station_id}）｜網頁更新 {info['updated']}")
 
     api_note = ""
     if which == "今日" and config.CWA_API_KEY:
@@ -205,76 +162,106 @@ def run_temptop(page: Page, t, which: str) -> tuple[str, list[dict]]:
         except Exception as e:  # noqa: BLE001
             api_note = f"API核對失敗：{e}"
     rec = base_row(t, SITE_TEMPTOP, "縣市", config.COUNTY,
-                   **{"網頁發佈時間": obs_time, "數值": temp,
-                      "補充說明": "；".join([f"資料日期{day}({which})", f"測站{station}", api_note, *notes]),
-                      "截圖檔名": shot, "狀態": "已截圖" if cells else "已截圖-未讀到數值"})
+                   網頁發佈時間=info["updated"], 網頁有效時間=f"{info['from']}～{info['to']}",
+                   數值=temp,
+                   補充說明="；".join(x for x in (f"資料日期{day}({which})", f"觀測時間{obs_time}",
+                                                f"測站{station}({station_id}) {place}", api_note, *notes) if x),
+                   截圖檔名=shot, 狀態="已截圖" if temp else "已截圖-未讀到數值")
     rec["關鍵時段內"] = ""
     return day, [rec]
 
 
 # ================================================================== 網站二：高溫資訊
+def _w29_towns(page: Page) -> tuple[dict[str, str], str]:
+    """讀取網頁本身使用的 Warning_63.js，回傳 ({行政區: 燈號}, 原始文字)。"""
+    raw = page.evaluate(
+        """(code) => fetch('/Data/js/warn/Warning_' + code + '.js?_=' + Date.now())
+                       .then(r => r.ok ? r.text() : '')""",
+        COUNTY_CODE,
+    )
+    lights = {}
+    for code, items in re.findall(r"'(\d{7})'\s*:\s*\[([^\]]*)\]", raw):
+        if code not in TOWN_CODES:
+            continue
+        levels = [W29_LEVEL[x] for x in re.findall(r"W29(?:-\d)?", items) if x in W29_LEVEL]
+        order = ["黃色", "橙色", "紅色"]
+        lights[TOWN_CODES[code]] = max(levels, key=order.index) if levels else "無"
+    return lights, raw
+
+
+def _county_light(page: Page) -> str:
+    title = page.evaluate(
+        """(code) => { const td = document.querySelector('td[data-name="C' + code + '"]');
+                       if (!td) return null;
+                       const s = td.querySelector('[title]'); return s ? s.getAttribute('title') : ''; }""",
+        COUNTY_CODE,
+    )
+    if title is None:
+        raise RuntimeError("找不到臺北市燈號欄位 td[data-name=C63]")
+    for c in ("紅色", "橙色", "黃色"):
+        if c in title:
+            return c
+    return "無"
+
+
 def run_w29(page: Page, t, state: dict, force: bool = False) -> list[dict]:
     day = t.strftime("%Y-%m-%d")
     open_page(page, config.URL_W29)
-    issue = labeled_time(page, "發佈時間")
-    valid = labeled_time(page, "有效時間")
-    all_rows = table_rows(page)
-    county_row = find_row(all_rows, config.COUNTY, exact=True)
-    county_light = light_of(" ".join(county_row[1:])) if county_row else "無"
+    issue = text_of(page, "#warningTime")
+    valid = text_of(page, "#validEnd")
+    county_light = _county_light(page)
+    towns, raw = _w29_towns(page)
+    if not towns:
+        raise RuntimeError("讀不到 Warning_63.js 的行政區資料")
 
-    version = issue or short_hash(all_rows)
+    version = short_hash([issue, county_light, towns])
     st = state.setdefault("w29", {})
     changed = version != st.get("last_version")
     base = common.baseline_due(state, "w29", t)
-    common_kw = {"網頁發佈時間": issue, "網頁有效時間": valid}
+    kw = {"網頁發佈時間": issue, "網頁有效時間": valid}
+    lit = [f"{d}{v}" for d, v in towns.items() if v != "無"]
+    summary = f"臺北市：{county_light}；行政區：{'、'.join(lit) or '皆無燈號'}"
 
     if not (changed or base or force):
         return [base_row(t, SITE_W29, "縣市", config.COUNTY, 燈號_網頁=county_light,
-                         狀態="檢查-無變化", 補充說明=f"發佈時間與上次相同（{issue}）", **common_kw)]
+                         狀態="檢查-無變化", 補充說明=f"與上次相同（發佈時間 {issue}）；{summary}", **kw)]
 
-    reason = "手動強制" if force else ("發佈時間變更" if changed else f"基準截圖{base}時")
-    out = os.path.join(common.site_dir(day, SITE_W29))
-    rows: list[dict] = []
+    reason = "手動強制" if force else ("燈號或發佈時間變更" if changed else f"基準截圖{base}時")
+    out = common.site_dir(day, SITE_W29)
+    stem = f"{t:%H%M}_高溫資訊"
 
-    # 臺北市整體
-    strat = select_area(page, [config.COUNTY])
-    county_rows = table_rows(page)
-    shot = shoot(page, os.path.join(out, f"{t:%H%M}_高溫資訊_臺北市.png"), t, config.URL_W29,
-                 f"網頁發佈時間：{issue} ｜ 有效時間：{valid} ｜ 地區：臺北市 ｜ 燈號：{county_light} ｜ 原因：{reason}")
-    rows.append(base_row(t, SITE_W29, "縣市", config.COUNTY, 燈號_網頁=county_light, 截圖檔名=shot,
-                         狀態="已截圖", 補充說明=f"{reason}；{strat}", **common_kw))
-
-    # 12 個行政區
-    for d in config.DISTRICTS:
-        r = find_row(county_rows, d) or find_row(all_rows, f"{config.COUNTY}{d}")
-        light = light_of(" ".join(r[1:])) if r else "無"
-        shot, note, status = "", "", "已記錄"
-        if config.DISTRICT_SCREENSHOTS:
-            try:
-                note = select_area(page, [f"{config.COUNTY}{d}", d])
-                r2 = find_row(table_rows(page), d)
-                if r2 and light == "無":
-                    light = light_of(" ".join(r2[1:]))
-                shot = shoot(page, os.path.join(out, f"{t:%H%M}_高溫資訊_臺北市{d}.png"), t, config.URL_W29,
-                             f"網頁發佈時間：{issue} ｜ 地區：臺北市{d} ｜ 燈號：{light} ｜ 原因：{reason}")
-                status = "已截圖"
-            except Exception as e:  # noqa: BLE001
-                note, status = f"行政區截圖失敗：{e}", "已記錄-截圖失敗"
-        rows.append(base_row(t, SITE_W29, "行政區", f"{config.COUNTY}{d}", 燈號_網頁=light, 截圖檔名=shot,
-                             狀態=status, 補充說明=f"{reason}；{note}".strip("；"), **common_kw))
-
-    # 官方整張圖備份
+    # 全縣市畫面（含各縣市燈號表）
+    shot_all = shoot(page, os.path.join(out, f"{stem}_全縣市.png"), t, config.URL_W29,
+                     f"網頁發佈時間：{issue} ｜ 有效時間：{valid} ｜ {summary} ｜ 原因：{reason}")
+    # 臺北市畫面（只有臺北市有燈號時才能選取）
+    shot_tpe, note = "", "臺北市無燈號，地點切換中不可選取，以全縣市畫面為證"
     try:
+        note = choose(page, "#CID", config.COUNTY)
+        shot_tpe = shoot(page, os.path.join(out, f"{stem}_臺北市.png"), t, config.URL_W29,
+                         f"網頁發佈時間：{issue} ｜ 有效時間：{valid} ｜ {summary} ｜ 原因：{reason}")
+    except RuntimeError as e:
+        if "無法選取" not in str(e):
+            note = f"選取臺北市失敗：{e}"
+    evidence = save_text(os.path.join(out, f"{stem}_Warning_63.js.txt"), raw)
+
+    rows = [base_row(t, SITE_W29, "縣市", config.COUNTY, 燈號_網頁=county_light,
+                     截圖檔名="、".join(x for x in (shot_tpe, shot_all) if x), 狀態="已截圖",
+                     補充說明=f"{reason}；{note}；行政區資料檔 {evidence}", **kw)]
+    for d in config.DISTRICTS:
+        rows.append(base_row(t, SITE_W29, "行政區", f"{config.COUNTY}{d}", 燈號_網頁=towns.get(d, "無"),
+                             截圖檔名=shot_tpe or shot_all, 狀態="已記錄",
+                             補充說明=f"{reason}；燈號取自 Warning_63.js", **kw))
+
+    try:  # 官方整張圖備份
         img = requests.get(config.URL_W29_IMAGE, timeout=30)
-        if img.ok:
-            p = os.path.join(out, f"{t:%H%M}_高溫資訊_官方全臺圖.png")
+        if img.ok and img.headers.get("content-type", "").startswith("image"):
+            p = os.path.join(out, f"{stem}_官方全臺圖.png")
             with open(p, "wb") as f:
                 f.write(img.content)
             common.watermark(p, [f"下載時間：{common.stamp(t)}（臺北時間 UTC+8）", f"來源：{config.URL_W29_IMAGE}"])
     except Exception:  # noqa: BLE001
         pass
 
-    # API 核對：縣市目前警特報
     if config.CWA_API_KEY:
         try:
             rows[0]["燈號_API"] = api.taipei_current_hazards()
@@ -311,7 +298,7 @@ def run_health(page: Page, t, state: dict, force: bool = False) -> list[dict]:
     day = t.strftime("%Y-%m-%d")
     st = state.setdefault("health", {})
 
-    # 1) 先用 API 取得燈號（也用來判斷是否有更新）
+    # 1) API：各行政區 09–14 時的熱傷害燈號
     per_district: dict[str, list[dict]] = {}
     api_err = ""
     if config.CWA_API_KEY:
@@ -322,58 +309,64 @@ def run_health(page: Page, t, state: dict, force: bool = False) -> list[dict]:
         except Exception as e:  # noqa: BLE001
             api_err = f"API失敗：{e}"
 
-    # 2) 開網頁
-    page_err = ""
+    # 2) 網頁：同時把網頁自己載入的燈號資料 JSON 留存當佐證
+    page_json: dict[str, str] = {}
+
+    def keep(resp):
+        if "/Lohas/Health/" in resp.url and resp.url.endswith(".json"):
+            try:
+                page_json[resp.url.rsplit("/", 1)[-1]] = resp.text()
+            except Exception:  # noqa: BLE001
+                pass
+
+    page.on("response", keep)
     try:
         open_page(page, config.URL_HEALTH)
-        page_sig = short_hash(page.inner_text("body")[:20000])
-    except Exception as e:  # noqa: BLE001
-        page_err, page_sig = f"網頁開啟失敗：{e}", ""
+        note = choose(page, "select", config.COUNTY)
+    finally:
+        page.remove_listener("response", keep)
+    updated = labeled_time(page, "更新時間")
 
-    version = short_hash(per_district) if per_district else page_sig
-    changed = bool(version) and version != st.get("last_version")
+    version = short_hash(per_district) if per_district else short_hash([updated, page_json])
+    changed = version != st.get("last_version")
     base = common.baseline_due(state, "health", t)
     all_entries = [e for v in per_district.values() for e in v]
     county_light = api.worst_warning(all_entries) if per_district else ""
+    kw = {"網頁發佈時間": updated}
 
-    if not (changed or base or force) and not page_err:
+    if not (changed or base or force):
         return [base_row(t, SITE_HEALTH, "縣市", config.COUNTY, 燈號_API=county_light,
-                         狀態="檢查-無變化", 補充說明="熱傷害預報與上次相同")]
+                         狀態="檢查-無變化", 補充說明=f"與上次相同（網頁更新時間 {updated}）", **kw)]
 
     reason = "手動強制" if force else ("資料更新" if changed else f"基準截圖{base}時")
     out = common.site_dir(day, SITE_HEALTH)
-    rows: list[dict] = []
+    stem = f"{t:%H%M}_熱傷害"
+    for name, text in page_json.items():
+        save_text(os.path.join(out, f"{stem}_{name}"), text)
 
-    shot, note = "", page_err
-    if not page_err:
-        try:
-            note = select_area(page, [config.COUNTY])
-        except Exception as e:  # noqa: BLE001
-            note = f"未能點選臺北市（截取預設畫面）：{e}"
-        shot = shoot(page, os.path.join(out, f"{t:%H%M}_熱傷害_臺北市.png"), t, config.URL_HEALTH,
-                     f"地區：臺北市 ｜ 9–14時最高燈號(API)：{county_light or '未取得'} ｜ 原因：{reason}")
-    rows.append(base_row(t, SITE_HEALTH, "縣市", config.COUNTY, 燈號_API=county_light, 截圖檔名=shot,
-                         狀態="已截圖" if shot else "截圖失敗",
-                         補充說明="；".join(x for x in (reason, note, api_err) if x)))
+    shot = shoot(page, os.path.join(out, f"{stem}_臺北市.png"), t, config.URL_HEALTH,
+                 f"網頁更新時間：{updated} ｜ 地區：臺北市 ｜ 9–14時最高燈號(API)：{county_light or '未取得'} ｜ 原因：{reason}")
+    rows = [base_row(t, SITE_HEALTH, "縣市", config.COUNTY, 燈號_API=county_light, 截圖檔名=shot, 狀態="已截圖",
+                     補充說明="；".join(x for x in (reason, note, api_err) if x), **kw)]
 
     for d in config.DISTRICTS:
         entries = per_district.get(d, [])
         light = api.worst_warning(entries) if entries else ""
         dshot, dnote, status = "", "", "已記錄"
-        if config.DISTRICT_SCREENSHOTS and not page_err:
+        if config.DISTRICT_SCREENSHOTS:
             try:
-                dnote = select_area(page, [f"{config.COUNTY}{d}", d])
-                dshot = shoot(page, os.path.join(out, f"{t:%H%M}_熱傷害_臺北市{d}.png"), t, config.URL_HEALTH,
-                              f"地區：臺北市{d} ｜ {_fmt(entries) or '未取得API資料'} ｜ 原因：{reason}")
+                dnote = click_text(page, d)
+                dshot = shoot(page, os.path.join(out, f"{stem}_臺北市{d}.png"), t, config.URL_HEALTH,
+                              f"網頁更新時間：{updated} ｜ 地區：臺北市{d} ｜ "
+                              f"{_fmt(entries) or '未取得API資料'} ｜ 原因：{reason}")
                 status = "已截圖"
             except Exception as e:  # noqa: BLE001
                 dnote, status = f"行政區截圖失敗：{e}", "已記錄-截圖失敗"
         rows.append(base_row(t, SITE_HEALTH, "行政區", f"{config.COUNTY}{d}", 燈號_API=light,
                              數值=_fmt(entries), 截圖檔名=dshot, 狀態=status,
-                             補充說明="；".join(x for x in (reason, dnote) if x)))
+                             補充說明="；".join(x for x in (reason, dnote) if x), **kw))
 
-    if version:
-        st["last_version"] = version
+    st["last_version"] = version
     if base:
         common.mark_baseline(state, "health", t, base)
     return rows
