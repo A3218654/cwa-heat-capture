@@ -127,6 +127,7 @@ def _scroll_table_to(page: Page, label: str) -> float | None:
                 .filter(e => e.offsetParent && e.innerText.trim() === label);
             if (!cells.length) return null;
             const c = cells[0];
+            c.closest('table').style.zoom = '0.9';  // 縮小一點，讓 07–18 時 12 欄完整入鏡
             let p = c.parentElement;
             while (p && p !== document.body && !(p.scrollWidth > p.clientWidth + 5)) p = p.parentElement;
             const firstCol = c.closest('tr').querySelector('th,td');

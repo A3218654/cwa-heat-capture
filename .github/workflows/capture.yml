@@ -16,7 +16,7 @@ on:
         description: "執行模式"
         type: choice
         default: auto
-        options: [auto, heat, temptop-today, temptop-yesterday, station, town, probe]
+        options: [auto, heat, temptop-today, temptop-yesterday, station, town, probe, purge]
       force:
         description: "忽略「無變化」直接截圖"
         type: boolean
@@ -31,6 +31,18 @@ on:
         default: ""
       fake_now:
         description: "測試用假時間（例如 2026-10-03T23:50），正式執行請留空"
+        type: string
+        default: ""
+      purge_day:
+        description: "維護用：要清除的日期"
+        type: string
+        default: ""
+      purge_stamp:
+        description: "維護用：要刪除的紀錄時間開頭"
+        type: string
+        default: ""
+      purge_paths:
+        description: "維護用：要刪除的雲端路徑（以 | 分隔）"
         type: string
         default: ""
       probe_clicks:
@@ -54,12 +66,13 @@ jobs:
       CWA_API_KEY: ${{ secrets.CWA_API_KEY }}
       RCLONE_CONFIG_GDRIVE_TYPE: drive
       RCLONE_CONFIG_GDRIVE_SCOPE: drive
-      RCLONE_CONFIG_GDRIVE_TOKEN: ${{ secrets.GDRIVE_TOKEN }}
+      # 測試（debug）時不上傳 Drive，避免測試資料混入正式紀錄
+      RCLONE_CONFIG_GDRIVE_TOKEN: ${{ !inputs.debug && secrets.GDRIVE_TOKEN || '' }}
       RCLONE_CONFIG_GDRIVE_ROOT_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
       DISTRICT_SCREENSHOTS: ${{ vars.DISTRICT_SCREENSHOTS || 'true' }}
       PROBE_URLS: ${{ inputs.probe_urls }}
       PROBE_CLICKS: ${{ inputs.probe_clicks }}
-      CAPTURE_NOW: ${{ inputs.fake_now }}
+      CAPTURE_NOW: ${{ inputs.debug && inputs.fake_now || '' }}
       ALLOW_NO_UPLOAD: ${{ inputs.debug && '1' || '' }}
     steps:
       - uses: actions/checkout@v4
@@ -99,7 +112,17 @@ jobs:
           echo "mode=$m" >> "$GITHUB_OUTPUT"
           echo "觸發：${{ github.event_name }} ${{ github.event.schedule }} → 模式 $m"
 
+      - name: 清除測試紀錄（維護用）
+        if: inputs.mode == 'purge'
+        env:
+          RCLONE_CONFIG_GDRIVE_TOKEN: ${{ secrets.GDRIVE_TOKEN }}
+          PURGE_DAY: ${{ inputs.purge_day }}
+          PURGE_STAMP: ${{ inputs.purge_stamp }}
+          PURGE_PATHS: ${{ inputs.purge_paths }}
+        run: python -m capture.maint
+
       - name: 截圖並上傳 Google Drive
+        if: inputs.mode != 'purge'
         run: python -m capture.main --mode "${{ steps.m.outputs.mode }}" ${{ inputs.force && '--force' || '' }}
 
       - name: 保留本次輸出（失敗或探勘模式時，保存 7 天供除錯）
