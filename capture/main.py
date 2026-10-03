@@ -20,6 +20,9 @@ from . import common, config, sites
 
 
 def decide(mode: str, t) -> str:
+    # 「今日最高溫」排程若被延遲到隔天才執行，改截「昨日」，資料才會對到正確日期
+    if mode == "temptop-today" and t.hour < 12:
+        return "temptop-yesterday"
     if mode != "auto":
         return mode
     if t.hour == 23 and t.minute >= 30:

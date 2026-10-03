@@ -71,8 +71,20 @@ jobs:
       - name: 安裝瀏覽器
         run: python -m playwright install --with-deps chromium
 
+      - name: 決定執行模式（依觸發來源，不依實際開始時間，避免排程延遲時做錯事）
+        id: m
+        run: |
+          case "${{ github.event.schedule }}" in
+            "55 15 * * *") m=temptop-today ;;
+            "30 16 * * *") m=temptop-yesterday ;;
+            "")            m="${{ inputs.mode || 'auto' }}" ;;
+            *)             m=heat ;;
+          esac
+          echo "mode=$m" >> "$GITHUB_OUTPUT"
+          echo "觸發：${{ github.event_name }} ${{ github.event.schedule }} → 模式 $m"
+
       - name: 截圖並上傳 Google Drive
-        run: python -m capture.main --mode "${{ inputs.mode || 'auto' }}" ${{ inputs.force && '--force' || '' }}
+        run: python -m capture.main --mode "${{ steps.m.outputs.mode }}" ${{ inputs.force && '--force' || '' }}
 
       - name: 保留本次輸出（失敗或探勘模式時，保存 7 天供除錯）
         if: failure() || inputs.mode == 'probe'
