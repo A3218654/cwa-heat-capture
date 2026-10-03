@@ -92,6 +92,37 @@ repo 頁面 → **Settings** → 左側 **Secrets and variables** → **Actions*
 
 GitHub 右上角頭像 → **Settings** → **Notifications** → **Actions**，勾選 **Email**，並建議選 **Only notify for failed workflows**。
 
+### 步驟 6：設定準時觸發（cron-job.org）
+
+GitHub 內建排程常延遲數小時或直接跳過，因此改由免費的 cron-job.org 準時呼叫 GitHub 執行；GitHub 內建排程保留當備援。
+
+**6-1 建立 GitHub 權杖**
+1. 打開 <https://github.com/settings/personal-access-tokens/new>
+2. Token name：`cron-job`；Expiration：選最長（到期前要回來更新）
+3. Repository access：**Only select repositories** → 選 `cwa-heat-capture`
+4. Permissions → Repository permissions → **Actions** 改成 **Read and write**
+5. 按 **Generate token**，複製 `github_pat_` 開頭的權杖（只會顯示一次）
+
+**6-2 在 cron-job.org 建立三個工作**
+
+註冊並登入 <https://console.cron-job.org>，按 **CREATE CRONJOB**。三個工作的共同設定：
+
+- URL：`https://api.github.com/repos/A3218654/cwa-heat-capture/actions/workflows/capture.yml/dispatches`
+- ADVANCED 分頁：
+  - Request method：**POST**
+  - Headers（三個）：
+    - `Authorization` = `Bearer 你的github_pat_權杖`
+    - `Accept` = `application/vnd.github+json`
+    - `Content-Type` = `application/json`
+  - Time zone：**Asia/Taipei**
+- 成功時 GitHub 回應 **204**，是正常的
+
+| 工作名稱 | 執行時間（Custom） | Request body |
+|---|---|---|
+| 高溫與熱傷害 | 分鐘 0,15,30,45；小時 7–14、17 | `{"ref":"main","inputs":{"mode":"heat"}}` |
+| 今日最高溫 | 每天 23:55 | `{"ref":"main","inputs":{"mode":"temptop-today"}}` |
+| 昨日最高溫 | 每天 00:30 | `{"ref":"main","inputs":{"mode":"temptop-yesterday"}}` |
+
 ## 三、日常維護
 
 - **要暫停**：Actions → 氣象截圖 → 右上角「⋯」→ **Disable workflow**。冬天沒有高溫燈號時可以暫停。
@@ -102,7 +133,8 @@ GitHub 右上角頭像 → **Settings** → **Notifications** → **Actions**，
 
 ## 四、已知限制
 
-- **GitHub 排程會延遲**：尖峰時可能晚幾分鐘到十幾分鐘，少數情況會略過一次。每 15 分鐘檢查的設計就是為了容許這種延遲；CSV 的「記錄時間」是實際執行時間。
+- **GitHub 內建排程不準時**：實測曾延遲 3–5 小時或整段跳過，所以主要靠 cron-job.org 觸發（步驟 6）。CSV 的「記錄時間」永遠是實際執行時間。
+- **GitHub 權杖會到期**：到期前 GitHub 會寄信提醒，屆時重做步驟 6-1，並把 cron-job.org 三個工作的 Authorization 換成新權杖。
 - **網站改版**：若某天點不到「臺北市」，CSV 會記「失敗」並寄信通知你，當天請手動補截，並把錯誤訊息交給 Claude 修正。
 - **熱傷害燈號是逐三小時資料**：09–14 時對應 09:00 與 12:00 兩個時段，CSV 的「數值」欄會列出兩段的燈號與 WBGT。
 - **縣市溫度極值與 API 核對值可能不同**：API 核對值取臺北市所有測站中的最高值，網頁可能只列特定測站，兩者僅供互相參照。
