@@ -28,6 +28,10 @@ on:
         description: "探勘模式要看的網址（空白分隔，留空則看預設三個網站）"
         type: string
         default: ""
+      probe_clicks:
+        description: "探勘模式開頁後要點擊的元素（CSS，空白分隔）"
+        type: string
+        default: ""
 
 concurrency:
   group: capture
@@ -49,6 +53,7 @@ jobs:
       RCLONE_CONFIG_GDRIVE_ROOT_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
       DISTRICT_SCREENSHOTS: ${{ vars.DISTRICT_SCREENSHOTS || 'true' }}
       PROBE_URLS: ${{ inputs.probe_urls }}
+      PROBE_CLICKS: ${{ inputs.probe_clicks }}
       ALLOW_NO_UPLOAD: ${{ inputs.debug && '1' || '' }}
     steps:
       - uses: actions/checkout@v4

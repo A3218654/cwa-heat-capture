@@ -450,6 +450,13 @@ def probe(page: Page, t) -> str:
         info = {"url": url}
         try:
             open_page(page, url)
+            for css in os.environ.get("PROBE_CLICKS", "").split():
+                try:
+                    page.locator(css).first.click(timeout=5_000)
+                    settle(page)
+                    info.setdefault("clicked", []).append(css)
+                except Exception as e:  # noqa: BLE001
+                    info.setdefault("click_errors", []).append(f"{css}: {e}")
             info["title"] = page.title()
             info["final_url"] = page.url
             info["candidates"] = page.evaluate(
