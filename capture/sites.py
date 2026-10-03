@@ -427,11 +427,24 @@ def probe(page: Page, t) -> str:
     """把三個網頁的 HTML、截圖、資料連線與「臺北市」候選元素存下來，供調整選取方式。"""
     folder = os.path.join(config.OUT_DIR, "_probe", f"{t:%Y%m%d_%H%M}")
     os.makedirs(folder, exist_ok=True)
-    for key, url in (("temptop", config.URL_TEMPTOP), ("w29", config.URL_W29), ("health", config.URL_HEALTH)):
+    targets = [("temptop", config.URL_TEMPTOP), ("w29", config.URL_W29), ("health", config.URL_HEALTH)]
+    extra = os.environ.get("PROBE_URLS", "").split()
+    if extra:
+        targets = [(f"extra{i}", u) for i, u in enumerate(extra)]
+    for key, url in targets:
         responses = []
+        bodies = os.path.join(folder, f"{key}_data")
+        os.makedirs(bodies, exist_ok=True)
 
-        def on_response(r, acc=responses):
+        def on_response(r, acc=responses, bodies=bodies):
             acc.append({"url": r.url, "status": r.status, "type": r.request.resource_type})
+            if "/Data/" in r.url and r.request.resource_type in ("xhr", "fetch", "script"):
+                try:
+                    name = re.sub(r"[^\w.-]", "_", r.url.split("/Data/", 1)[1])[:120]
+                    with open(os.path.join(bodies, name + ".txt"), "w", encoding="utf-8") as f:
+                        f.write(r.text())
+                except Exception:  # noqa: BLE001
+                    pass
 
         page.on("response", on_response)
         info = {"url": url}
