@@ -17,6 +17,9 @@ TZ = ZoneInfo("Asia/Taipei")
 
 # ------------------------------------------------------------------ 時間
 def now() -> datetime:
+    fake = os.environ.get("CAPTURE_NOW")  # 測試用：指定假時間，例如 2026-10-03T23:50
+    if fake:
+        return datetime.fromisoformat(fake).replace(tzinfo=TZ)
     return datetime.now(TZ)
 
 

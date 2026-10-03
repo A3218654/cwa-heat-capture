@@ -7,6 +7,7 @@ on:
     - cron: "45 0 * * *"      # 臺北 08:45
     - cron: "*/15 1-6 * * *"  # 臺北 09:00–14:45 每 15 分鐘（關鍵時段）
     - cron: "45 9 * * *"      # 臺北 17:45（17:30 發布隔日高溫資訊後）
+    - cron: "15 11 * * *"     # 臺北 19:15 鄉鎮體感溫度（07–18 時）
     - cron: "55 15 * * *"     # 臺北 23:55 縣市溫度極值（今日）
     - cron: "30 16 * * *"     # 臺北 00:30 縣市溫度極值（昨日，定案版）
   workflow_dispatch:
@@ -15,7 +16,7 @@ on:
         description: "執行模式"
         type: choice
         default: auto
-        options: [auto, heat, temptop-today, temptop-yesterday, probe]
+        options: [auto, heat, temptop-today, temptop-yesterday, station, town, probe]
       force:
         description: "忽略「無變化」直接截圖"
         type: boolean
@@ -26,6 +27,10 @@ on:
         default: false
       probe_urls:
         description: "探勘模式要看的網址（空白分隔，留空則看預設三個網站）"
+        type: string
+        default: ""
+      fake_now:
+        description: "測試用假時間（例如 2026-10-03T23:50），正式執行請留空"
         type: string
         default: ""
       probe_clicks:
@@ -54,6 +59,7 @@ jobs:
       DISTRICT_SCREENSHOTS: ${{ vars.DISTRICT_SCREENSHOTS || 'true' }}
       PROBE_URLS: ${{ inputs.probe_urls }}
       PROBE_CLICKS: ${{ inputs.probe_clicks }}
+      CAPTURE_NOW: ${{ inputs.fake_now }}
       ALLOW_NO_UPLOAD: ${{ inputs.debug && '1' || '' }}
     steps:
       - uses: actions/checkout@v4

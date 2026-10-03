@@ -16,7 +16,7 @@ from datetime import timedelta
 
 from playwright.sync_api import sync_playwright
 
-from . import common, config, sites
+from . import common, config, extra, sites
 
 
 def decide(mode: str, t) -> str:
@@ -47,7 +47,8 @@ def with_retry(fn, label: str, errors: list[str]):
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", default="auto",
-                    choices=["auto", "heat", "temptop-today", "temptop-yesterday", "probe"])
+                    choices=["auto", "heat", "temptop-today", "temptop-yesterday", "probe",
+                             "station", "town"])
     ap.add_argument("--force", action="store_true")
     args = ap.parse_args()
 
@@ -77,11 +78,28 @@ def main() -> int:
             if res:
                 day, rows = res
                 common.append_rows(day, rows)
+            if mode == "temptop-today":  # 當天最後一次機會：補抓漏掉的測站整點與體感溫度
+                rows = with_retry(lambda: extra.run_station(page, t, state, final=True), "臺北測站", errors) or []
+                common.append_rows(today, rows)
+                rows = with_retry(lambda: extra.run_town(page, t, state), "鄉鎮體感溫度", errors) or []
+                common.append_rows(today, rows)
+
+        elif mode == "station":
+            rows = with_retry(lambda: extra.run_station(page, t, state), "臺北測站", errors) or []
+            common.append_rows(today, rows)
+
+        elif mode == "town":
+            rows = with_retry(lambda: extra.run_town(page, t, state, force=args.force), "鄉鎮體感溫度", errors) or []
+            common.append_rows(today, rows)
 
         else:  # heat
             rows = with_retry(lambda: sites.run_w29(page, t, state, args.force), "高溫資訊", errors) or []
             common.append_rows(today, rows)
             rows = with_retry(lambda: sites.run_health(page, t, state, args.force), "熱傷害", errors) or []
+            common.append_rows(today, rows)
+            rows = with_retry(lambda: extra.run_station(page, t, state), "臺北測站", errors) or []
+            common.append_rows(today, rows)
+            rows = with_retry(lambda: extra.run_town(page, t, state), "鄉鎮體感溫度", errors) or []
             common.append_rows(today, rows)
 
         # 失敗也寫一筆紀錄，證明這個時間點有執行
