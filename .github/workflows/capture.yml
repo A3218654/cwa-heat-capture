@@ -134,7 +134,7 @@ jobs:
           retention-days: 7
 
       - name: 測試輸出推到 probe-results 分支
-        if: always() && (inputs.mode == 'probe' || inputs.debug)
+        if: always() && (inputs.mode == 'probe' || inputs.mode == 'purge' || inputs.debug)
         run: |
           mkdir -p /tmp/pr && cp -r out/. /tmp/pr/ && cp -r state /tmp/pr/_state 2>/dev/null || true
           git config user.name "github-actions[bot]"

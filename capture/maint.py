@@ -20,6 +20,13 @@ def main() -> int:
         print("rclone 未設定")
         return 1
     r = config.RCLONE_REMOTE
+    report = []
+    print_ = print
+
+    def print(*a):  # noqa: A001  同時寫進報告
+        report.append(" ".join(str(x) for x in a))
+        print_(*a)
+
     for p in paths:
         res = common._rclone("purge", f"{r}{p}") if not p.endswith((".csv", ".png", ".txt", ".json")) \
             else common._rclone("deletefile", f"{r}{p}")
@@ -38,6 +45,11 @@ def main() -> int:
         rel = f"{day[:7]}/{day}/每日紀錄_{day}.csv"
         res = common._rclone("copyto", path, f"{r}{rel}")
         print("CSV 上傳", "OK" if res.returncode == 0 else res.stderr[-300:])
+    ls = common._rclone("lsf", "-R", f"{r}{day[:7]}/{day}")
+    print("---- 雲端目前內容 ----\n" + ls.stdout)
+    os.makedirs(config.OUT_DIR, exist_ok=True)
+    with open(os.path.join(config.OUT_DIR, "_purge_report.txt"), "w", encoding="utf-8") as f:
+        f.write("\n".join(report))
     return 0
 
 
