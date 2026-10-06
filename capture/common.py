@@ -198,7 +198,7 @@ def pull_existing(days: list[str]) -> None:
     # 最外層的總表
     os.makedirs(config.OUT_DIR, exist_ok=True)
     for name in (config.MASTER_TOWN_XLSX, config.MASTER_TEMPTOP_XLSX, config.MASTER_W29_XLSX,
-                 config.MASTER_HEALTH_XLSX):
+                 config.MASTER_HEALTH_XLSX, config.MASTER_STATION_XLSX):
         _rclone("copyto", f"{r}{name}", os.path.join(config.OUT_DIR, name))
 
 

@@ -27,7 +27,6 @@ HEADER_FONT = Font(bold=True, color="FFFFFF")
 SHEETS = [
     ("高溫資訊明細", "高溫資訊"),
     ("熱傷害明細", "熱傷害"),
-    ("臺北測站", "臺北測站"),
 ]
 DROP_COLS = {"網站"}
 
@@ -284,6 +283,72 @@ def update_health_master(day: str) -> bool:
     return True
 
 
+# ------------------------------------------------------------------ 臺北測站中午溫度（使用者指定格式）
+DAY_GRAY = PatternFill("solid", fgColor="EDEDED")
+
+
+def station_row(day: str, rows: list[dict]) -> list | None:
+    temps = {}
+    for r in rows:
+        if "臺北測站" not in r.get("網站", "") or not r.get("狀態", "").startswith("已截圖"):
+            continue
+        m = re.search(r"(\d{2}):00", r.get("網頁發佈時間", ""))
+        v = re.search(r"-?\d+(\.\d+)?", r.get("數值", ""))
+        if m and v:
+            temps[int(m.group(1))] = float(v.group(0))
+    if not temps:
+        return None
+    return [f"{int(day[5:7])}月", int(day[8:10]), *[temps.get(h) for h in config.STATION_HOURS]]
+
+
+def write_station_sheet(ws, roc_year: int, rows: list[list]) -> None:
+    ws.append([f"{roc_year}年", "日", *[f"{h}時" for h in config.STATION_HOURS]])
+    for r in rows:
+        ws.append(r)
+    ncols = 2 + len(config.STATION_HOURS)
+    for row in ws.iter_rows(min_row=1, max_row=ws.max_row, max_col=ncols):
+        for c in row:
+            c.alignment = Alignment(horizontal="center", vertical="center")
+            c.font = Font(size=12, bold=c.row == 1)
+            c.border = GRID_BOX
+            if c.row > 1 and c.column == 1:
+                c.fill = MONTH_BLUE
+            elif c.row > 1 and c.column == 2:
+                c.fill = DAY_GRAY
+            if c.row > 1 and c.column >= 2:
+                c.number_format = "0.0"
+    for i in range(1, ncols + 1):
+        ws.column_dimensions[get_column_letter(i)].width = 10
+    ws.freeze_panes = "A2"
+
+
+def update_station_master(day: str) -> bool:
+    """歷年中午溫度_臺北測站：每年（民國）一個分頁，每天一列。"""
+    _, rows = _read_csv(common.csv_path(day))
+    row = station_row(day, rows)
+    if not row:
+        return False
+    path = os.path.join(config.OUT_DIR, config.MASTER_STATION_XLSX)
+    exists = os.path.exists(path)
+    wb = load_workbook(path) if exists else Workbook()
+    if not exists:
+        wb.remove(wb.active)
+    roc = int(day[:4]) - 1911
+    title = f"{roc}年"
+    data = {}
+    if title in wb.sheetnames:
+        for vals in wb[title].iter_rows(min_row=2, values_only=True):
+            if vals and vals[0]:
+                data[(int(str(vals[0]).rstrip("月")), int(vals[1]))] = list(vals[:2 + len(config.STATION_HOURS)])
+        del wb[title]
+    data[(int(day[5:7]), int(day[8:10]))] = row
+    write_station_sheet(wb.create_sheet(title), roc, [data[k] for k in sorted(data)])
+    wb._sheets.sort(key=lambda s: s.title, reverse=True)
+    wb.active = 0
+    wb.save(path)
+    return True
+
+
 def _town_rows(day: str) -> tuple[list[str], list[list]]:
     fields, rows = _read_csv(os.path.join(common.day_dir(day), f"體感溫度_{day}.csv"))
     return fields, [[r.get(f, "") for f in fields] for r in rows]
@@ -302,6 +367,8 @@ def build_daily(day: str) -> str | None:
     write_w29_daily_sheet(wb.create_sheet("高溫紀錄表"), day, rec, county)
     write_w29_district_sheet(wb.create_sheet("北市12行政區_高溫資訊"), [w29_district_row(day, towns)])
     write_health_district_sheet(wb.create_sheet("北市12行政區_熱傷害"), [w29_district_row(day, health_summary(rows))])
+    srow = station_row(day, rows)
+    write_station_sheet(wb.create_sheet("歷年中午溫度_臺北測站"), int(day[:4]) - 1911, [srow] if srow else [])
     cols = [f for f in fields if f not in DROP_COLS]
     for title, key in SHEETS:
         part = [r for r in rows if key in r.get("網站", "") and r.get("狀態") not in ("失敗",)]
@@ -380,6 +447,8 @@ def refresh(days: list[str]) -> list[str]:
                 done.append(f"{config.MASTER_W29_XLSX}［{day}］")
             if update_health_master(day):
                 done.append(f"{config.MASTER_HEALTH_XLSX}［{day}］")
+            if update_station_master(day):
+                done.append(f"{config.MASTER_STATION_XLSX}［{day}］")
             if update_temptop_master(day):
                 done.append(f"{config.MASTER_TEMPTOP_XLSX}［{day}］")
         except Exception as e:  # noqa: BLE001  試算表失敗不影響截圖與 CSV
