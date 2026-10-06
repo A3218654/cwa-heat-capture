@@ -48,11 +48,11 @@ def _station_rows(page: Page) -> list[dict]:
     )
 
 
-def run_station(page: Page, t, state: dict, final: bool = False) -> list[dict]:
+def run_station(page: Page, t, state: dict, final: bool = False, force: bool = False) -> list[dict]:
     """final=True 表示當天最後一次機會（23:55），抓不到的整點要記成缺漏。"""
     day = t.strftime("%Y-%m-%d")
     done = _days_state(state, "station", day).setdefault(day, [])
-    due = [h for h in config.STATION_HOURS if h <= t.hour and h not in done]
+    due = [h for h in config.STATION_HOURS if h <= t.hour and (force or h not in done)]
     if not due:
         return []
 
@@ -102,7 +102,10 @@ def run_station(page: Page, t, state: dict, final: bool = False) -> list[dict]:
                                 網頁發佈時間=f"{mmdd} {hhmm}", 數值=f"{hit['temp']}°C",
                                 截圖檔名=os.path.basename(path), 狀態="已截圖",
                                 補充說明=f"{hhmm} 整點觀測；{hit['weather']}；相對溼度 {hit['rh']}%"))
-        done.append(h)
+        if h not in done:
+            done.append(h)
+        if force:
+            records[-1]["補充說明"] += "；補抓（原紀錄於 10/6 被覆蓋，數值取自測站頁面過去 24 小時表格）"
     return records
 
 

@@ -16,7 +16,7 @@ on:
         description: "執行模式"
         type: choice
         default: auto
-        options: [auto, heat, temptop-today, temptop-yesterday, temptop-2daysago, station, town, probe, purge, rebuild]
+        options: [auto, heat, temptop-today, temptop-yesterday, temptop-2daysago, station, town, probe, purge, rebuild, recover]
       force:
         description: "忽略「無變化」直接截圖"
         type: boolean
@@ -130,8 +130,16 @@ jobs:
           REBUILD_DAYS: ${{ inputs.purge_day }}
         run: python -m capture.workbook
 
+      - name: 復原被覆蓋的紀錄（維護用）
+        if: inputs.mode == 'recover'
+        env:
+          RCLONE_CONFIG_GDRIVE_TOKEN: ${{ secrets.GDRIVE_TOKEN }}
+          RECOVER_DAYS: ${{ inputs.purge_day }}
+          RECOVER_APPLY: ${{ inputs.purge_stamp == 'APPLY' && '1' || '' }}
+        run: python -m capture.recover
+
       - name: 截圖並上傳 Google Drive
-        if: inputs.mode != 'purge' && inputs.mode != 'rebuild'
+        if: inputs.mode != 'purge' && inputs.mode != 'rebuild' && inputs.mode != 'recover'
         run: python -m capture.main --mode "${{ steps.m.outputs.mode }}" ${{ inputs.force && '--force' || '' }}
 
       - name: 保留本次輸出（失敗或探勘模式時，保存 7 天供除錯）
@@ -143,7 +151,7 @@ jobs:
           retention-days: 7
 
       - name: 測試輸出推到 probe-results 分支
-        if: always() && (inputs.mode == 'probe' || inputs.mode == 'purge' || inputs.debug)
+        if: always() && (inputs.mode == 'probe' || inputs.mode == 'purge' || inputs.mode == 'recover' || inputs.debug)
         run: |
           mkdir -p /tmp/pr out && cp -r out/. /tmp/pr/ && cp -r state /tmp/pr/_state 2>/dev/null || true
           git config user.name "github-actions[bot]"

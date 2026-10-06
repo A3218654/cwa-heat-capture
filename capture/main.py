@@ -92,7 +92,7 @@ def main() -> int:
                 common.append_rows(today, rows)
 
         elif mode == "station":
-            rows = with_retry(lambda: extra.run_station(page, t, state), "臺北測站", errors) or []
+            rows = with_retry(lambda: extra.run_station(page, t, state, force=args.force), "臺北測站", errors) or []
             common.append_rows(today, rows)
 
         elif mode == "town":
