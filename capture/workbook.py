@@ -215,9 +215,7 @@ def update_w29_master(day: str) -> bool:
         del wb[year]
     data[(int(day[5:7]), int(day[8:10]))] = w29_district_row(day, towns)
     write_w29_district_sheet(wb.create_sheet(year), [data[k] for k in sorted(data)])
-    wb._sheets.sort(key=lambda s: s.title, reverse=True)
-    wb.active = 0
-    wb.save(path)
+    finalize_master(wb, path)
     return True
 
 
@@ -277,9 +275,7 @@ def update_health_master(day: str) -> bool:
         del wb[year]
     data[(int(day[5:7]), int(day[8:10]))] = w29_district_row(day, towns)
     write_health_district_sheet(wb.create_sheet(year), [data[k] for k in sorted(data)])
-    wb._sheets.sort(key=lambda s: s.title, reverse=True)
-    wb.active = 0
-    wb.save(path)
+    finalize_master(wb, path)
     return True
 
 
@@ -343,10 +339,134 @@ def update_station_master(day: str) -> bool:
         del wb[title]
     data[(int(day[5:7]), int(day[8:10]))] = row
     write_station_sheet(wb.create_sheet(title), roc, [data[k] for k in sorted(data)])
-    wb._sheets.sort(key=lambda s: s.title, reverse=True)
-    wb.active = 0
-    wb.save(path)
+    finalize_master(wb, path)
     return True
+
+
+# ------------------------------------------------------------------ 總表的「說明」分頁
+CWA = "交通部中央氣象署"
+COMMON_ROWS = [
+    ("資料提供機關", CWA),
+    ("時間", "表中所有時間皆為臺北時間（UTC+8）"),
+    ("截圖佐證", "每次擷取的網頁截圖存放在 Google Drive 的「年-月／年-月-日」每日資料夾，截圖上方印有截圖時間與來源網址"),
+    ("每日明細", "每日資料夾中的「紀錄_日期.xlsx」記錄當天每一次檢查的時間、內容與截圖檔名"),
+    ("自動化程式", "https://github.com/A3218654/cwa-heat-capture"),
+]
+README = {
+    config.MASTER_TEMPTOP_XLSX: {
+        "title": "縣市溫度極值總表",
+        "rows": [
+            ("記錄內容", "臺北市每日最高溫、出現時間與測站（多個測站同為最高溫時全部列出，上下對應）"),
+            ("資料來源網頁", "縣市溫度極值（選「高溫」）"),
+            ("網址", config.URL_TEMPTOP),
+            ("擷取時間", "每天 23:55 擷取「今日」；隔天 00:30 擷取「昨日」作為定案值"),
+            ("取值規則", "優先採用隔天擷取的「昨日」定案值；若無，採用當晚「今日」最後一次擷取值"),
+            ("核對資料", "氣象資料開放平臺 O-A0001-001 氣象觀測站-全測站逐時氣象資料（取臺北市各站當日最高溫核對）"),
+            ("核對資料網址", "https://opendata.cwa.gov.tw/dataset/observation/O-A0001-001"),
+            ("截圖資料夾", "每日資料夾／1_縣市溫度極值"),
+        ],
+    },
+    config.MASTER_W29_XLSX: {
+        "title": "高溫資訊總表",
+        "rows": [
+            ("記錄內容", "臺北市 12 行政區每日 9:00–14:00 關鍵時段內出現過的最高高溫燈號"),
+            ("資料來源網頁", "高溫資訊（地點切換：臺北市）"),
+            ("網址", config.URL_W29),
+            ("行政區燈號資料", "網頁使用的資料檔（W29-1／2／3＝黃／橙／紅燈）"),
+            ("行政區燈號資料網址", "https://www.cwa.gov.tw/Data/js/warn/Warning_63.js"),
+            ("燈號定義", "黃燈：氣溫達 36°C 以上；橙燈：達 36°C 以上且持續 3 天以上，或達 38°C 以上；紅燈：達 38°C 以上且持續 3 天以上"),
+            ("官方發布時間", "每日 17:30 發布隔日高溫資訊，並於 7:30、11:30、14:30 定時更新；遇突發顯著高溫依整點觀測即時更新"),
+            ("產品說明文件", "https://www.cwa.gov.tw/V8/assets/pdf/HeatInformation_ProductDescription.pdf"),
+            ("擷取時間", "7:00–14:45 每 15 分鐘檢查；燈號或發布時間有變更即截圖，另於 9、12、14 時固定截圖"),
+            ("取值規則", "只計 9:00–14:00 內的檢查紀錄（17:30 發布的是隔日燈號，不計入當天）；「–」表示無燈號"),
+            ("截圖資料夾", "每日資料夾／2_高溫資訊（含 Warning_63.js 原始資料檔）"),
+        ],
+    },
+    config.MASTER_HEALTH_XLSX: {
+        "title": "熱傷害總表",
+        "rows": [
+            ("記錄內容", "臺北市 12 行政區每日 09 時、12 時兩個時段（涵蓋 9:00–14:00）中最高的熱傷害預警燈號"),
+            ("資料來源網頁", "健康氣象－熱傷害（選擇縣市：臺北市，逐區點選）"),
+            ("網址", config.URL_HEALTH),
+            ("網頁燈號資料", "網頁本身載入的資料檔"),
+            ("網頁燈號資料網址", "https://crowa.cwa.gov.tw/api/v2.0/static/Lohas/Health/getWarnTown_HD.json\n"
+                                 "https://crowa.cwa.gov.tw/api/v2.0/static/Lohas/Health/getUserRiskForecast_HD.json"),
+            ("燈號說明", "依 WBGT（綜合溫度熱指數）分為 注意／警戒／危險／高危險（網頁標示為高風險）四級；逐三小時預報"),
+            ("核對資料", "氣象資料開放平臺 M-A0085-001 健康氣象熱傷害指數及警示（全台各鄉鎮五日逐三小時預報）"),
+            ("核對資料網址", "https://opendata.cwa.gov.tw/"),
+            ("擷取時間", "7:00–14:45 每 15 分鐘檢查；資料更新即截圖（臺北市＋12 區各一張），另於 9、12、14 時固定截圖"),
+            ("取值規則", "取 09、12 時段中較高者；15 時以後時段不計；「–」表示無燈號"),
+            ("截圖資料夾", "每日資料夾／3_熱傷害（含臺北市資料.json）"),
+        ],
+    },
+    config.MASTER_STATION_XLSX: {
+        "title": "歷年中午溫度_臺北測站",
+        "rows": [
+            ("記錄內容", "臺北氣象站（站號 466920）每日 11:00、12:00、13:00 整點氣溫"),
+            ("資料來源網頁", "測站觀測資料－臺北（過去 24 小時，每 10 分鐘一筆）"),
+            ("網址", config.URL_STATION),
+            ("擷取時間", "每個整點後第一次檢查（約 11:15、12:15、13:15）擷取並將該整點列標黃截圖；當晚 23:55 補抓漏掉的整點"),
+            ("取值規則", "取表格中該整點（hh:00）那一列的溫度；分頁名稱為民國年"),
+            ("截圖資料夾", "每日資料夾／4_臺北測站逐時"),
+        ],
+    },
+    config.MASTER_TOWN_XLSX: {
+        "title": "體感溫度總表",
+        "rows": [
+            ("記錄內容", "臺北市 12 行政區每日 07–18 時逐時體感溫度與溫度（每天一個分頁）"),
+            ("資料來源網頁", "鄉鎮預報－「過去 24 小時」表格"),
+            ("網址", config.URL_TOWN.format(tid="6300100") + "\n（TID 6300100 松山區 … 6301200 北投區，共 12 區）"),
+            ("數值資料", "網頁使用的資料檔（12 區逐時溫度與體感溫度）"),
+            ("數值資料網址", "https://www.cwa.gov.tw" + config.URL_TOWN_24HR_DATA),
+            ("擷取時間", "每天 19:00 後擷取一次（含 07–18 時），當晚 23:55 補抓"),
+            ("取值規則", "空白表示氣象署該小時無資料"),
+            ("截圖資料夾", "每日資料夾／5_鄉鎮體感溫度（含 ChartData_GT24hr_T_63.js 原始資料檔）"),
+        ],
+    },
+}
+
+
+def _write_readme(ws, info: dict) -> None:
+    ws.append([info["title"] + "－資料來源說明"])
+    ws.merge_cells("A1:B1")
+    ws["A1"].font = Font(size=16, bold=True, color="1F4E79")
+    ws.append([])
+    ws.append(["項目", "內容"])
+    for c in ws[3]:
+        c.fill, c.font = HEADER_FILL, HEADER_FONT
+    for k, v in info["rows"] + COMMON_ROWS:
+        ws.append([k, v])
+        cell = ws.cell(row=ws.max_row, column=2)
+        if v.startswith("http"):
+            cell.hyperlink = v.split("\n")[0]
+            cell.font = Font(color="0563C1", underline="single")
+    for row in ws.iter_rows(min_row=3, max_row=ws.max_row, max_col=2):
+        for c in row:
+            c.alignment = Alignment(vertical="center", wrap_text=True)
+            c.border = GRID_BOX
+        if row[0].row > 3:
+            row[0].font = Font(bold=True)
+        lines = str(row[1].value or "").count("\n") + 1 + len(str(row[1].value or "")) // 60
+        ws.row_dimensions[row[0].row].height = 20 * lines
+    ws.column_dimensions["A"].width = 20
+    ws.column_dimensions["B"].width = 100
+    ws.page_setup.orientation = "landscape"   # 列印時橫向、寬度縮成一頁
+    ws.page_setup.fitToWidth, ws.page_setup.fitToHeight = 1, 0
+    ws.sheet_properties.pageSetUpPr.fitToPage = True
+
+
+def finalize_master(wb, path: str) -> None:
+    """資料分頁新到舊排序，最前面放「說明」分頁，開啟時顯示最新的資料分頁。"""
+    if "說明" in wb.sheetnames:
+        del wb["說明"]
+    wb._sheets.sort(key=lambda s: s.title, reverse=True)
+    info = README.get(os.path.basename(path))
+    if info:
+        _write_readme(wb.create_sheet("說明", 0), info)
+    wb.active = 1 if info and len(wb.sheetnames) > 1 else 0
+    for ws in wb.worksheets:
+        ws.sheet_view.tabSelected = ws is wb.active
+    wb.save(path)
 
 
 def _town_rows(day: str) -> tuple[list[str], list[list]]:
@@ -400,9 +520,7 @@ def update_master(day: str) -> bool:
     if day in wb.sheetnames:
         del wb[day]
     _write_sheet(wb.create_sheet(day), t_fields, t_rows)
-    wb._sheets.sort(key=lambda s: s.title, reverse=True)  # 最新的一天放最前面
-    wb.active = 0
-    wb.save(path)
+    finalize_master(wb, path)  # 最新的一天放最前面
     return True
 
 
@@ -429,9 +547,7 @@ def update_temptop_master(day: str) -> bool:
     existing[(rec["月份"], rec["日期"])] = rec
     ws = wb.create_sheet(year)
     write_temptop_sheet(ws, [existing[k] for k in sorted(existing)])
-    wb._sheets.sort(key=lambda s: s.title, reverse=True)
-    wb.active = 0
-    wb.save(path)
+    finalize_master(wb, path)
     return True
 
 
