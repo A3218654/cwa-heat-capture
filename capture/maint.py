@@ -27,7 +27,7 @@ def main() -> int:
         print(*a)
 
     for p in paths:
-        res = common._rclone("purge", f"{r}{p}") if not p.endswith((".csv", ".png", ".txt", ".json")) \
+        res = common._rclone("purge", f"{r}{p}") if not p.endswith((".csv", ".png", ".txt", ".json", ".xlsx")) \
             else common._rclone("deletefile", f"{r}{p}")
         log("刪除", p, "OK" if res.returncode == 0 else res.stderr[-300:])
     if stamp:
