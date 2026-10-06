@@ -44,9 +44,9 @@ DISTRICT_SCREENSHOTS = os.environ.get("DISTRICT_SCREENSHOTS", "true").lower() ==
 MASTER_TOWN_XLSX = "體感溫度總表.xlsx"   # Drive 最外層，每天一個分頁
 MASTER_TEMPTOP_XLSX = "縣市溫度極值總表.xlsx"  # Drive 最外層，每年一個分頁、每天一列
 MASTER_STATION_XLSX = "歷年中午溫度_臺北測站.xlsx"  # Drive 最外層，每年（民國）一個分頁、每天一列
-MASTER_HEALTH_XLSX = "熱傷害總表.xlsx"          # Drive 最外層，每年一個分頁、每天一列、12 區各一欄
+MASTER_HEALTH_XLSX = "北市12行政區_熱傷害總表.xlsx"          # Drive 最外層，每年一個分頁、每天一列、12 區各一欄
 MASTER_RECORD_XLSX = "高溫紀錄表總表.xlsx"     # Drive 最外層，每年一個分頁、每天一列：月份／日期／最高溫／燈號
-MASTER_W29_XLSX = "高溫資訊總表.xlsx"         # Drive 最外層，每年一個分頁、每天一列、12 區各一欄
+MASTER_W29_XLSX = "北市12行政區_高溫資訊總表.xlsx"         # Drive 最外層，每年一個分頁、每天一列、12 區各一欄
 OUT_DIR = os.environ.get("OUT_DIR", "out")
 STATE_DIR = os.environ.get("STATE_DIR", "state")
 # rclone 遠端名稱（由環境變數 RCLONE_CONFIG_GDRIVE_* 設定，見 README）
