@@ -97,7 +97,7 @@ def labeled_time(page: Page, label: str) -> str:
 
 def shoot(page: Page, path: str, t, url: str, extra: str) -> str:
     page.screenshot(path=path, full_page=True)
-    common.watermark(path, [
+    path = common.watermark(path, [
         f"截圖時間：{common.stamp(t)}（臺北時間 UTC+8）",
         f"來源：{url}",
         extra,

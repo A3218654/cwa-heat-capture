@@ -24,6 +24,10 @@ DS_HEALTH = "M-A0085-001"     # 健康氣象熱傷害指數及警示（各鄉鎮
 DS_WARNING = "W-C0033-001"    # 各縣市目前警特報
 CWA_API_KEY = os.environ.get("CWA_API_KEY", "")
 
+# ---- 記錄期間 ----
+# 這天之後不再記錄（隔天 00:30 仍會補抓這天的最高溫定案值）
+END_DAY = os.environ.get("END_DAY", "2026-11-01")
+
 # ---- 地區 ----
 COUNTY = "臺北市"
 DISTRICTS = [

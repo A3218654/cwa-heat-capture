@@ -93,7 +93,7 @@ def run_station(page: Page, t, state: dict, final: bool = False) -> list[dict]:
                         tr.style.outline = ''; tr.querySelectorAll('th,td').forEach(c => c.style.background = ''); }""",
             hit["i"],
         )
-        common.watermark(path, [
+        path = common.watermark(path, [
             f"截圖時間：{common.stamp(t)}（臺北時間 UTC+8）",
             f"來源：{config.URL_STATION}",
             f"臺北測站 {mmdd} {hhmm} 觀測（黃色列）｜溫度 {hit['temp']}°C ｜ {hit['weather']} ｜ 相對溼度 {hit['rh']}%",
@@ -188,7 +188,7 @@ def run_town(page: Page, t, state: dict, force: bool = False) -> list[dict]:
             width = page.evaluate("() => document.documentElement.scrollWidth")
             page.screenshot(path=path, full_page=True,
                             clip={"x": 0, "y": 0, "width": width, "height": bottom + 16})
-            common.watermark(path, [
+            path = common.watermark(path, [
                 f"截圖時間：{common.stamp(t)}（臺北時間 UTC+8）",
                 f"來源：{config.URL_TOWN.format(tid=code)}（過去24小時）",
                 f"臺北市{name} {mmdd} 體感溫度 ｜ {at_text} ｜ 最高 {hi}°C",

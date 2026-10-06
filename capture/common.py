@@ -83,7 +83,7 @@ def _wrap(draw, text: str, font, max_w: int) -> list[str]:
     return out
 
 
-def watermark(png_path: str, lines: list[str]) -> None:
+def watermark(png_path: str, lines: list[str]) -> str:
     """在截圖最上方加一條時間資訊橫幅（不遮住原畫面），過長的文字自動換行。"""
     img = Image.open(png_path).convert("RGB")
     font_path = _find_cjk_font()
@@ -104,7 +104,12 @@ def watermark(png_path: str, lines: list[str]) -> None:
     for text, first in wrapped:
         draw.text((16, y), text, font=font, fill=(255, 214, 0) if first else (235, 235, 235))
         y += line_h
-    out.save(png_path, optimize=True)
+    # 存成 JPG（約為 PNG 的三分之一大小），刪除原本的 PNG，回傳新路徑
+    jpg = os.path.splitext(png_path)[0] + ".jpg"
+    out.save(jpg, "JPEG", quality=82, optimize=True, progressive=True)
+    if jpg != png_path and os.path.exists(png_path):
+        os.remove(png_path)
+    return jpg
 
 
 # ------------------------------------------------------------------ 狀態檔（記住上次的發佈時間）

@@ -58,6 +58,11 @@ def main() -> int:
 
     today = t.strftime("%Y-%m-%d")
     yesterday = (t - timedelta(days=1)).strftime("%Y-%m-%d")
+    data_day = {"temptop-yesterday": yesterday,
+                "temptop-2daysago": (t - timedelta(days=2)).strftime("%Y-%m-%d")}.get(mode, today)
+    if mode != "probe" and config.END_DAY and data_day > config.END_DAY:
+        print(f"記錄期間已於 {config.END_DAY} 結束，本次不執行。")
+        return 0
     day_before = (t - timedelta(days=2)).strftime("%Y-%m-%d")
     touched = [today, yesterday] + ([day_before] if mode == "temptop-2daysago" else [])
     common.pull_existing(touched)
