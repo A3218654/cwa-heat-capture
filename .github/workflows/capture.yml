@@ -120,6 +120,7 @@ jobs:
           PURGE_STAMP: ${{ inputs.purge_stamp }}
           PURGE_PATHS: ${{ inputs.purge_paths }}
           MIGRATE_RAW: ${{ inputs.purge_stamp == 'MIGRATE_RAW' && '1' || '' }}
+          PREV_DAY: ${{ inputs.fake_now }}
         run: python -m capture.maint
 
       - name: 重建試算表（維護用）

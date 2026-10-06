@@ -35,6 +35,19 @@ def main() -> int:
         report.append(" ".join(str(x) for x in a))
         print(*a)
 
+    if stamp == "FETCH_DOCS":  # 取回總表、當天試算表與幾張截圖範例（給說明文件用）
+        stamp = ""
+        d = os.path.join(config.OUT_DIR, "_docs")
+        common._rclone("copy", r, d, "--max-depth", "1", "--include", "*.xlsx")
+        common._rclone("copy", f"{r}{day[:7]}/{day}", os.path.join(d, day), "--include", "*.xlsx",
+                       "--include", "*/*.jpg", "--include", "*/*.png", "--max-size", "3M")
+        prev = os.environ.get("PREV_DAY", "")
+        if prev:
+            common._rclone("copy", f"{r}{prev[:7]}/{prev}/1_縣市溫度極值", os.path.join(d, prev, "1_縣市溫度極值"),
+                           "--include", "2355_*")
+        log("---- 每日資料夾 ----\n" + common._rclone("lsf", f"{r}{day[:7]}/{day}").stdout)
+        log("---- 月份資料夾 ----\n" + common._rclone("lsf", f"{r}{day[:7]}").stdout)
+
     for p in paths:
         res = common._rclone("purge", f"{r}{p}") if not p.endswith((".csv", ".png", ".txt", ".json", ".xlsx")) \
             else common._rclone("deletefile", f"{r}{p}")
