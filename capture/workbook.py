@@ -179,6 +179,20 @@ def write_w29_daily_sheet(ws, day: str, rec: dict | None, county: str) -> None:
     _light_cells(ws, "D2:D2")
 
 
+def w29_district_row(day: str, towns: dict[str, str]) -> list:
+    return [int(day[5:7]), int(day[8:10]), *[towns[d] for d in config.DISTRICTS]]
+
+
+def write_w29_district_sheet(ws, rows: list[list]) -> None:
+    """月份／日期／12 區燈號（每日檔與總表共用同一格式）。"""
+    headers = ["月份", "日期", *config.DISTRICTS]
+    ws.append(headers)
+    for r in rows:
+        ws.append(r)
+    _style_grid(ws, len(headers), HEAD_GRAY, MONTH_BLUE, {1: 8, 2: 8})
+    _light_cells(ws, f"C2:{get_column_letter(len(headers))}{max(ws.max_row, 2)}")
+
+
 def update_w29_master(day: str) -> bool:
     """高溫資訊總表：每年一個分頁，每天一列，12 區各一欄。"""
     _, rows = _read_csv(common.csv_path(day))
@@ -198,13 +212,8 @@ def update_w29_master(day: str) -> bool:
             if vals and vals[0] is not None:
                 data[(int(vals[0]), int(vals[1]))] = list(vals[:len(headers)])
         del wb[year]
-    data[(int(day[5:7]), int(day[8:10]))] = [int(day[5:7]), int(day[8:10]), *[towns[d] for d in config.DISTRICTS]]
-    ws = wb.create_sheet(year)
-    ws.append(headers)
-    for k in sorted(data):
-        ws.append(data[k])
-    _style_grid(ws, len(headers), HEAD_GRAY, MONTH_BLUE, {1: 8, 2: 8})
-    _light_cells(ws, f"C2:{get_column_letter(len(headers))}{max(ws.max_row, 2)}")
+    data[(int(day[5:7]), int(day[8:10]))] = w29_district_row(day, towns)
+    write_w29_district_sheet(wb.create_sheet(year), [data[k] for k in sorted(data)])
     wb._sheets.sort(key=lambda s: s.title, reverse=True)
     wb.active = 0
     wb.save(path)
@@ -225,8 +234,9 @@ def build_daily(day: str) -> str | None:
     wb.remove(wb.active)
     rec = temptop_record(day, rows)
     write_temptop_sheet(wb.create_sheet("縣市溫度極值"), [rec] if rec else [])
-    county, _ = w29_summary(rows)
-    write_w29_daily_sheet(wb.create_sheet("高溫資訊"), day, rec, county)
+    county, towns = w29_summary(rows)
+    write_w29_daily_sheet(wb.create_sheet("高溫紀錄表"), day, rec, county)
+    write_w29_district_sheet(wb.create_sheet("北市12行政區_高溫資訊"), [w29_district_row(day, towns)])
     cols = [f for f in fields if f not in DROP_COLS]
     for title, key in SHEETS:
         part = [r for r in rows if key in r.get("網站", "") and r.get("狀態") not in ("失敗",)]
@@ -238,6 +248,7 @@ def build_daily(day: str) -> str | None:
         ws.append(["今天的體感溫度尚未記錄（每天 19 時後產生）"])
     bad = [r for r in rows if r.get("狀態") in ("失敗", "缺漏") or "截圖失敗" in r.get("狀態", "")]
     _write_sheet(wb.create_sheet("執行狀況"), fields, [[r.get(c, "") for c in fields] for r in bad])
+    wb.move_sheet("高溫資訊明細", offset=len(wb.sheetnames) - 1 - wb.sheetnames.index("高溫資訊明細"))
     path = os.path.join(common.day_dir(day), f"紀錄_{day}.xlsx")
     wb.save(path)
     return path
