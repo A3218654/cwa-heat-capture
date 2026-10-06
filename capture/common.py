@@ -190,10 +190,14 @@ def pull_existing(days: list[str]) -> None:
     r = config.RCLONE_REMOTE
     _rclone("copy", f"{r}_state", config.STATE_DIR)
     for day in days:
-        rel = f"{day[:7]}/{day}/每日紀錄_{day}.csv"
-        local = os.path.join(config.OUT_DIR, rel)
-        os.makedirs(os.path.dirname(local), exist_ok=True)
-        _rclone("copyto", f"{r}{rel}", local)
+        for name in (f"每日紀錄_{day}.csv", f"體感溫度_{day}.csv"):
+            rel = f"{day[:7]}/{day}/{name}"
+            local = os.path.join(config.OUT_DIR, rel)
+            os.makedirs(os.path.dirname(local), exist_ok=True)
+            _rclone("copyto", f"{r}{rel}", local)
+    # 最外層的總表
+    os.makedirs(config.OUT_DIR, exist_ok=True)
+    _rclone("copyto", f"{r}{config.MASTER_TOWN_XLSX}", os.path.join(config.OUT_DIR, config.MASTER_TOWN_XLSX))
 
 
 def push_all() -> bool:

@@ -16,7 +16,7 @@ on:
         description: "執行模式"
         type: choice
         default: auto
-        options: [auto, heat, temptop-today, temptop-yesterday, temptop-2daysago, station, town, probe, purge]
+        options: [auto, heat, temptop-today, temptop-yesterday, temptop-2daysago, station, town, probe, purge, rebuild]
       force:
         description: "忽略「無變化」直接截圖"
         type: boolean
@@ -121,8 +121,15 @@ jobs:
           PURGE_PATHS: ${{ inputs.purge_paths }}
         run: python -m capture.maint
 
+      - name: 重建試算表（維護用）
+        if: inputs.mode == 'rebuild'
+        env:
+          RCLONE_CONFIG_GDRIVE_TOKEN: ${{ secrets.GDRIVE_TOKEN }}
+          REBUILD_DAYS: ${{ inputs.purge_day }}
+        run: python -m capture.workbook
+
       - name: 截圖並上傳 Google Drive
-        if: inputs.mode != 'purge'
+        if: inputs.mode != 'purge' && inputs.mode != 'rebuild'
         run: python -m capture.main --mode "${{ steps.m.outputs.mode }}" ${{ inputs.force && '--force' || '' }}
 
       - name: 保留本次輸出（失敗或探勘模式時，保存 7 天供除錯）

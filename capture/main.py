@@ -16,7 +16,7 @@ from datetime import timedelta
 
 from playwright.sync_api import sync_playwright
 
-from . import common, config, extra, sites
+from . import common, config, extra, sites, workbook
 
 
 def decide(mode: str, t) -> str:
@@ -58,7 +58,9 @@ def main() -> int:
 
     today = t.strftime("%Y-%m-%d")
     yesterday = (t - timedelta(days=1)).strftime("%Y-%m-%d")
-    common.pull_existing([today, yesterday])
+    day_before = (t - timedelta(days=2)).strftime("%Y-%m-%d")
+    touched = [today, yesterday] + ([day_before] if mode == "temptop-2daysago" else [])
+    common.pull_existing(touched)
     state = common.load_state()
     errors: list[str] = []
 
@@ -110,6 +112,8 @@ def main() -> int:
         browser.close()
 
     common.save_state(state)
+    if mode != "probe":
+        workbook.refresh(touched)
     uploaded = common.push_all()
     if not common.rclone_available() and mode != "probe" and not os.environ.get("ALLOW_NO_UPLOAD"):
         errors.append("尚未設定 Google Drive（GDRIVE_TOKEN / GDRIVE_FOLDER_ID），本次結果沒有存檔")
