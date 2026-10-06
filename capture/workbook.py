@@ -26,7 +26,7 @@ HEADER_FONT = Font(bold=True, color="FFFFFF")
 # 分頁名稱 → CSV「網站」欄的關鍵字
 SHEETS = [
     ("高溫資訊明細", "高溫資訊"),
-    ("熱傷害", "熱傷害"),
+    ("熱傷害明細", "熱傷害"),
     ("臺北測站", "臺北測站"),
 ]
 DROP_COLS = {"網站"}
@@ -145,15 +145,17 @@ def w29_summary(rows: list[dict]) -> tuple[str, dict[str, str]]:
     return county, towns
 
 
-def _light_cells(ws, ref: str) -> None:
+def _light_cells(ws, ref: str, options=None, fills=None, white_text=()) -> None:
     """燈號欄：下拉選單＋依內容自動上色（手動修改也會跟著變色）。"""
-    dv = DataValidation(type="list", formula1='"' + ",".join(LIGHTS) + '"', allow_blank=True)
+    options, fills = options or LIGHTS, fills or LIGHT_FILL
+    dv = DataValidation(type="list", formula1='"' + ",".join(options) + '"', allow_blank=True)
     ws.add_data_validation(dv)
     dv.add(ref)
     first = ref.split(":")[0]
-    for name, color in LIGHT_FILL.items():
+    for name, color in fills.items():
         ws.conditional_formatting.add(ref, FormulaRule(
-            formula=[f'{first}="{name}"'], fill=PatternFill("solid", fgColor=color, bgColor=color)))
+            formula=[f'{first}="{name}"'], fill=PatternFill("solid", fgColor=color, bgColor=color),
+            font=Font(color="FFFFFF") if name in white_text else None))
 
 
 def _style_grid(ws, ncols: int, header_fill, first_col_fill=None, widths=None) -> None:
@@ -220,6 +222,68 @@ def update_w29_master(day: str) -> bool:
     return True
 
 
+# ------------------------------------------------------------------ 熱傷害（使用者指定格式）
+HEAT_LEVELS = ["注意", "警戒", "危險", "高危險", "–"]
+HEAT_FILL = {"注意": "FFFF00", "警戒": "ED7D31", "危險": "FF0000", "高危險": "7030A0"}
+HEAT_RANK = {"–": 0, "注意": 1, "警戒": 2, "危險": 3, "高危險": 4}
+HEAT_ALIAS = {"高風險": "高危險"}
+
+
+def health_summary(rows: list[dict]) -> dict[str, str]:
+    """各區當天 09、12 時段（9–14 時）出現過的最高熱傷害燈號。"""
+    towns = {d: "–" for d in config.DISTRICTS}
+    for r in rows:
+        if "熱傷害" not in r.get("網站", "") or r.get("層級") != "行政區":
+            continue
+        name = r.get("地區", "").replace(config.COUNTY, "")
+        if name not in towns:
+            continue
+        found = re.findall(r"(\d{2}):00 (\S+?)\(", r.get("數值", ""))
+        levels = [w for h, w in found if config.WINDOW_START[0] <= int(h) <= config.WINDOW_END[0]]
+        if not found and r.get("關鍵時段內") == "是":   # 沒有時段資料時退回當日燈號
+            levels = [r.get("燈號_網頁", "")]
+        for w in levels:
+            w = HEAT_ALIAS.get(w, w)
+            if HEAT_RANK.get(w, 0) > HEAT_RANK[towns[name]]:
+                towns[name] = w
+    return towns
+
+
+def write_health_district_sheet(ws, rows: list[list]) -> None:
+    headers = ["月份", "日期", *config.DISTRICTS]
+    ws.append(headers)
+    for r in rows:
+        ws.append(r)
+    _style_grid(ws, len(headers), HEAD_GRAY, MONTH_BLUE, {1: 8, 2: 8})
+    _light_cells(ws, f"C2:{get_column_letter(len(headers))}{max(ws.max_row, 2)}",
+                 HEAT_LEVELS, HEAT_FILL, white_text=("危險", "高危險"))
+
+
+def update_health_master(day: str) -> bool:
+    _, rows = _read_csv(common.csv_path(day))
+    if not any("熱傷害" in r.get("網站", "") and r.get("層級") == "行政區" for r in rows):
+        return False
+    towns = health_summary(rows)
+    path = os.path.join(config.OUT_DIR, config.MASTER_HEALTH_XLSX)
+    exists = os.path.exists(path)
+    wb = load_workbook(path) if exists else Workbook()
+    if not exists:
+        wb.remove(wb.active)
+    year = day[:4]
+    data = {}
+    if year in wb.sheetnames:
+        for vals in wb[year].iter_rows(min_row=2, values_only=True):
+            if vals and vals[0] is not None:
+                data[(int(vals[0]), int(vals[1]))] = list(vals[:2 + len(config.DISTRICTS)])
+        del wb[year]
+    data[(int(day[5:7]), int(day[8:10]))] = w29_district_row(day, towns)
+    write_health_district_sheet(wb.create_sheet(year), [data[k] for k in sorted(data)])
+    wb._sheets.sort(key=lambda s: s.title, reverse=True)
+    wb.active = 0
+    wb.save(path)
+    return True
+
+
 def _town_rows(day: str) -> tuple[list[str], list[list]]:
     fields, rows = _read_csv(os.path.join(common.day_dir(day), f"體感溫度_{day}.csv"))
     return fields, [[r.get(f, "") for f in fields] for r in rows]
@@ -237,6 +301,7 @@ def build_daily(day: str) -> str | None:
     county, towns = w29_summary(rows)
     write_w29_daily_sheet(wb.create_sheet("高溫紀錄表"), day, rec, county)
     write_w29_district_sheet(wb.create_sheet("北市12行政區_高溫資訊"), [w29_district_row(day, towns)])
+    write_health_district_sheet(wb.create_sheet("北市12行政區_熱傷害"), [w29_district_row(day, health_summary(rows))])
     cols = [f for f in fields if f not in DROP_COLS]
     for title, key in SHEETS:
         part = [r for r in rows if key in r.get("網站", "") and r.get("狀態") not in ("失敗",)]
@@ -248,7 +313,8 @@ def build_daily(day: str) -> str | None:
         ws.append(["今天的體感溫度尚未記錄（每天 19 時後產生）"])
     bad = [r for r in rows if r.get("狀態") in ("失敗", "缺漏") or "截圖失敗" in r.get("狀態", "")]
     _write_sheet(wb.create_sheet("執行狀況"), fields, [[r.get(c, "") for c in fields] for r in bad])
-    wb.move_sheet("高溫資訊明細", offset=len(wb.sheetnames) - 1 - wb.sheetnames.index("高溫資訊明細"))
+    for name in ("高溫資訊明細", "熱傷害明細"):  # 明細放最後
+        wb.move_sheet(name, offset=len(wb.sheetnames) - 1 - wb.sheetnames.index(name))
     path = os.path.join(common.day_dir(day), f"紀錄_{day}.xlsx")
     wb.save(path)
     return path
@@ -312,6 +378,8 @@ def refresh(days: list[str]) -> list[str]:
                 done.append(f"{config.MASTER_TOWN_XLSX}［{day}］")
             if update_w29_master(day):
                 done.append(f"{config.MASTER_W29_XLSX}［{day}］")
+            if update_health_master(day):
+                done.append(f"{config.MASTER_HEALTH_XLSX}［{day}］")
             if update_temptop_master(day):
                 done.append(f"{config.MASTER_TEMPTOP_XLSX}［{day}］")
         except Exception as e:  # noqa: BLE001  試算表失敗不影響截圖與 CSV
