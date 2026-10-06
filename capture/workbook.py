@@ -522,7 +522,7 @@ def finalize_master(wb, path: str) -> None:
 
 
 def _town_rows(day: str) -> tuple[list[str], list[list]]:
-    fields, rows = _read_csv(os.path.join(common.day_dir(day), f"體感溫度_{day}.csv"))
+    fields, rows = _read_csv(common.town_csv_path(day))
     return fields, [[r.get(f, "") for f in fields] for r in rows]
 
 

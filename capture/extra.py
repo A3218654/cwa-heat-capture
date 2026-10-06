@@ -210,7 +210,7 @@ def run_town(page: Page, t, state: dict, force: bool = False) -> list[dict]:
                                 補充說明="；".join(x for x in (f"最高體感 {hi}°C", note) if x)))
 
     # 彙整表：一區兩列（體感溫度、溫度），欄位為 07–18 時
-    path = os.path.join(common.day_dir(day), f"體感溫度_{day}.csv")
+    path = common.town_csv_path(day)
     fields = ["行政區", "項目", *[f"{h:02d}時" for h in config.TOWN_HOURS], "最高"]
     with open(path, "w", newline="", encoding="utf-8-sig") as f:
         w = csv.DictWriter(f, fieldnames=fields)

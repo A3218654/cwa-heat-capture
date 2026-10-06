@@ -15,11 +15,20 @@ from . import common, config
 def main() -> int:
     day = os.environ["PURGE_DAY"]
     stamp = os.environ.get("PURGE_STAMP", "")
+    if stamp == "MIGRATE_RAW":
+        stamp = ""
     paths = [p for p in os.environ.get("PURGE_PATHS", "").split("|") if p.strip()]
     if not common.rclone_available():
         print("rclone 未設定")
         return 1
     r = config.RCLONE_REMOTE
+    if os.environ.get("MIGRATE_RAW") == "1":  # 一次性：把每日資料夾裡的 CSV 搬到 _原始資料
+        months = [m.strip("/") for m in common._rclone("lsf", "--dirs-only", r).stdout.split()
+                  if len(m.strip("/")) == 7 and m[4] == "-"]
+        for m in months:
+            res = common._rclone("move", f"{r}{m}", f"{r}{common.RAW_DIR}/{m}",
+                                 "--include", "*/每日紀錄_*.csv", "--include", "*/體感溫度_*.csv")
+            print("搬移", m, "OK" if res.returncode == 0 else res.stderr[-300:])
     report = []
 
     def log(*a):  # 同時印出並寫進報告
@@ -41,7 +50,7 @@ def main() -> int:
             w = csv.DictWriter(f, fieldnames=common.CSV_FIELDS, extrasaction="ignore")
             w.writeheader()
             w.writerows(keep)
-        rel = f"{day[:7]}/{day}/每日紀錄_{day}.csv"
+        rel = common.raw_rel(day, f"每日紀錄_{day}.csv")
         res = common._rclone("copyto", path, f"{r}{rel}")
         log("CSV 上傳", "OK" if res.returncode == 0 else res.stderr[-300:])
     if not stamp:  # 只查詢：列出當天失敗與新項目的紀錄

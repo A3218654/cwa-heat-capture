@@ -160,8 +160,23 @@ CSV_FIELDS = [
 ]
 
 
+RAW_DIR = "_原始資料"  # 程式累加用的 CSV 底稿，集中放在 Drive 最外層，不放進每日資料夾
+
+
+def raw_rel(day: str, name: str) -> str:
+    return f"{RAW_DIR}/{day[:7]}/{day}/{name}"
+
+
 def csv_path(day: str) -> str:
-    return os.path.join(day_dir(day), f"每日紀錄_{day}.csv")
+    path = os.path.join(config.OUT_DIR, raw_rel(day, f"每日紀錄_{day}.csv"))
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    return path
+
+
+def town_csv_path(day: str) -> str:
+    path = os.path.join(config.OUT_DIR, raw_rel(day, f"體感溫度_{day}.csv"))
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    return path
 
 
 def append_rows(day: str, rows: list[dict]) -> None:
@@ -196,7 +211,7 @@ def pull_existing(days: list[str]) -> None:
     _rclone("copy", f"{r}_state", config.STATE_DIR)
     for day in days:
         for name in (f"每日紀錄_{day}.csv", f"體感溫度_{day}.csv"):
-            rel = f"{day[:7]}/{day}/{name}"
+            rel = raw_rel(day, name)
             local = os.path.join(config.OUT_DIR, rel)
             os.makedirs(os.path.dirname(local), exist_ok=True)
             _rclone("copyto", f"{r}{rel}", local)
