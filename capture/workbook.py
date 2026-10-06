@@ -2,20 +2,21 @@
 
 - 每天資料夾：紀錄_YYYY-MM-DD.xlsx，分頁：
   縣市溫度極值／高溫資訊／熱傷害／臺北測站／體感溫度／執行狀況
-- Drive 最外層：體感溫度總表.xlsx，每天一個分頁（最新的在最前面）
+- Drive 最外層：體感溫度總表.xlsx（每天一個分頁）、縣市溫度極值總表.xlsx、高溫資訊總表.xlsx（每年一個分頁、每天一列）
 
 CSV 仍是程式追加資料用的原始紀錄；試算表每次執行後依 CSV 重新產生。
 也可單獨執行補建：REBUILD_DAYS=2026-10-02,2026-10-03 python -m capture.workbook
 """
 import csv
 import os
+import re
 import sys
 
 from openpyxl import Workbook, load_workbook
-import re
-
+from openpyxl.formatting.rule import FormulaRule
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
+from openpyxl.worksheet.datavalidation import DataValidation
 
 from . import common, config
 
@@ -24,7 +25,7 @@ HEADER_FONT = Font(bold=True, color="FFFFFF")
 
 # 分頁名稱 → CSV「網站」欄的關鍵字
 SHEETS = [
-    ("高溫資訊", "高溫資訊"),
+    ("高溫資訊明細", "高溫資訊"),
     ("熱傷害", "熱傷害"),
     ("臺北測站", "臺北測站"),
 ]
@@ -113,6 +114,103 @@ def write_temptop_sheet(ws, records: list[dict]) -> None:
     ws.freeze_panes = "A2"
 
 
+# ------------------------------------------------------------------ 高溫資訊（使用者指定格式）
+LIGHTS = ["黃燈", "橙燈", "紅燈", "–"]
+LIGHT_FROM = {"黃色": "黃燈", "橙色": "橙燈", "紅色": "紅燈"}
+LIGHT_FILL = {"黃燈": "FFFF00", "橙燈": "F4A261", "紅燈": "FF4D4D"}
+LIGHT_RANK = {"–": 0, "黃燈": 1, "橙燈": 2, "紅燈": 3}
+HEAD_GRAY = PatternFill("solid", fgColor="D9D9D9")
+MONTH_BLUE = PatternFill("solid", fgColor="DCE6F1")
+GRID = Side(style="thin", color="BFBFBF")
+GRID_BOX = Border(left=GRID, right=GRID, top=GRID, bottom=GRID)
+
+
+def w29_summary(rows: list[dict]) -> tuple[str, dict[str, str]]:
+    """當天 9–14 時（關鍵時段內）臺北市與各區出現過的最高燈號。"""
+    county, towns = "–", {d: "–" for d in config.DISTRICTS}
+
+    def up(cur, val):
+        v = LIGHT_FROM.get(val, "–")
+        return v if LIGHT_RANK[v] > LIGHT_RANK[cur] else cur
+
+    for r in rows:
+        if "高溫資訊" not in r.get("網站", "") or r.get("關鍵時段內") != "是":
+            continue
+        if r.get("層級") == "縣市":
+            county = up(county, r.get("燈號_網頁", ""))
+        elif r.get("層級") == "行政區":
+            name = r.get("地區", "").replace(config.COUNTY, "")
+            if name in towns:
+                towns[name] = up(towns[name], r.get("燈號_網頁", ""))
+    return county, towns
+
+
+def _light_cells(ws, ref: str) -> None:
+    """燈號欄：下拉選單＋依內容自動上色（手動修改也會跟著變色）。"""
+    dv = DataValidation(type="list", formula1='"' + ",".join(LIGHTS) + '"', allow_blank=True)
+    ws.add_data_validation(dv)
+    dv.add(ref)
+    first = ref.split(":")[0]
+    for name, color in LIGHT_FILL.items():
+        ws.conditional_formatting.add(ref, FormulaRule(
+            formula=[f'{first}="{name}"'], fill=PatternFill("solid", fgColor=color, bgColor=color)))
+
+
+def _style_grid(ws, ncols: int, header_fill, first_col_fill=None, widths=None) -> None:
+    for row in ws.iter_rows(min_row=1, max_row=ws.max_row, max_col=ncols):
+        for c in row:
+            c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+            c.font = Font(size=12)
+            c.border = GRID_BOX
+            if c.row == 1:
+                c.fill = header_fill
+            elif c.column == 1 and first_col_fill:
+                c.fill = first_col_fill
+    for i in range(1, ncols + 1):
+        ws.column_dimensions[get_column_letter(i)].width = (widths or {}).get(i, 11)
+    ws.freeze_panes = "C2" if ncols > 5 else "A2"
+
+
+def write_w29_daily_sheet(ws, day: str, rec: dict | None, county: str) -> None:
+    ws.append(["月份", "日期", "最高溫", "燈號"])
+    ws.append([int(day[5:7]), int(day[8:10]), rec["最高溫"] if rec else None, county])
+    _style_grid(ws, 4, PEACH, PEACH, {1: 10, 2: 10, 3: 12, 4: 12})
+    ws["C2"].number_format = "0.0"
+    _light_cells(ws, "D2:D2")
+
+
+def update_w29_master(day: str) -> bool:
+    """高溫資訊總表：每年一個分頁，每天一列，12 區各一欄。"""
+    _, rows = _read_csv(common.csv_path(day))
+    if not any("高溫資訊" in r.get("網站", "") and r.get("關鍵時段內") == "是" for r in rows):
+        return False
+    _, towns = w29_summary(rows)
+    path = os.path.join(config.OUT_DIR, config.MASTER_W29_XLSX)
+    exists = os.path.exists(path)
+    wb = load_workbook(path) if exists else Workbook()
+    if not exists:
+        wb.remove(wb.active)
+    year = day[:4]
+    headers = ["月份", "日期", *config.DISTRICTS]
+    data = {}
+    if year in wb.sheetnames:
+        for vals in wb[year].iter_rows(min_row=2, values_only=True):
+            if vals and vals[0] is not None:
+                data[(int(vals[0]), int(vals[1]))] = list(vals[:len(headers)])
+        del wb[year]
+    data[(int(day[5:7]), int(day[8:10]))] = [int(day[5:7]), int(day[8:10]), *[towns[d] for d in config.DISTRICTS]]
+    ws = wb.create_sheet(year)
+    ws.append(headers)
+    for k in sorted(data):
+        ws.append(data[k])
+    _style_grid(ws, len(headers), HEAD_GRAY, MONTH_BLUE, {1: 8, 2: 8})
+    _light_cells(ws, f"C2:{get_column_letter(len(headers))}{max(ws.max_row, 2)}")
+    wb._sheets.sort(key=lambda s: s.title, reverse=True)
+    wb.active = 0
+    wb.save(path)
+    return True
+
+
 def _town_rows(day: str) -> tuple[list[str], list[list]]:
     fields, rows = _read_csv(os.path.join(common.day_dir(day), f"體感溫度_{day}.csv"))
     return fields, [[r.get(f, "") for f in fields] for r in rows]
@@ -127,6 +225,8 @@ def build_daily(day: str) -> str | None:
     wb.remove(wb.active)
     rec = temptop_record(day, rows)
     write_temptop_sheet(wb.create_sheet("縣市溫度極值"), [rec] if rec else [])
+    county, _ = w29_summary(rows)
+    write_w29_daily_sheet(wb.create_sheet("高溫資訊"), day, rec, county)
     cols = [f for f in fields if f not in DROP_COLS]
     for title, key in SHEETS:
         part = [r for r in rows if key in r.get("網站", "") and r.get("狀態") not in ("失敗",)]
@@ -199,6 +299,8 @@ def refresh(days: list[str]) -> list[str]:
                 done.append(f"紀錄_{day}.xlsx")
             if update_master(day):
                 done.append(f"{config.MASTER_TOWN_XLSX}［{day}］")
+            if update_w29_master(day):
+                done.append(f"{config.MASTER_W29_XLSX}［{day}］")
             if update_temptop_master(day):
                 done.append(f"{config.MASTER_TEMPTOP_XLSX}［{day}］")
         except Exception as e:  # noqa: BLE001  試算表失敗不影響截圖與 CSV
