@@ -52,6 +52,8 @@ def main() -> int:
                 for x in csv.DictReader(f):
                     if x.get("狀態") in ("失敗", "缺漏") or x.get("網站", "")[:1] in "45" or "縣市溫度極值" in x.get("網站", ""):
                         log(" | ".join(x.get(k, "") for k in ("記錄時間", "網站", "地區", "網頁發佈時間", "數值", "狀態", "補充說明")))
+    top = common._rclone("lsf", "--max-depth", "1", r)
+    log("---- Drive 最外層 ----\n" + top.stdout)
     ls = common._rclone("lsf", "-R", f"{r}{day[:7]}/{day}")
     log("---- 雲端目前內容 ----\n" + ls.stdout)
     os.makedirs(config.OUT_DIR, exist_ok=True)
