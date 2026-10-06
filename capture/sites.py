@@ -126,8 +126,9 @@ def base_row(t, site: str, level: str, area: str, **kw) -> dict:
 
 # ================================================================== 網站一：縣市溫度極值
 def run_temptop(page: Page, t, which: str) -> tuple[str, list[dict]]:
-    """which = '今日' 或 '昨日'。回傳 (資料日期, CSV 列)。"""
-    day = (t if which == "今日" else t - timedelta(days=1)).strftime("%Y-%m-%d")
+    """which = '今日'、'昨日' 或 '前日'。回傳 (資料日期, CSV 列)。"""
+    back = {"今日": 0, "昨日": 1, "前日": 2}[which]
+    day = (t - timedelta(days=back)).strftime("%Y-%m-%d")
     open_page(page, config.URL_TEMPTOP)
     notes = [choose(page, "#SDay", which), choose(page, "#STemp", "高溫")]
     page.wait_for_function(

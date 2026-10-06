@@ -92,6 +92,7 @@ def watermark(png_path: str, lines: list[str]) -> None:
     measure = ImageDraw.Draw(img)
     wrapped = []  # (文字, 是否為第一行)
     for i, text in enumerate(lines):
+        text = " / ".join(x.strip() for x in str(text).splitlines() if x.strip())  # 網頁儲存格可能有多行
         for seg in _wrap(measure, text, font, img.width - 32):
             wrapped.append((seg, i == 0))
     line_h = size + 10

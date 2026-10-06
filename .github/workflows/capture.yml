@@ -16,7 +16,7 @@ on:
         description: "執行模式"
         type: choice
         default: auto
-        options: [auto, heat, temptop-today, temptop-yesterday, station, town, probe, purge]
+        options: [auto, heat, temptop-today, temptop-yesterday, temptop-2daysago, station, town, probe, purge]
       force:
         description: "忽略「無變化」直接截圖"
         type: boolean

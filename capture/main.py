@@ -48,7 +48,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", default="auto",
                     choices=["auto", "heat", "temptop-today", "temptop-yesterday", "probe",
-                             "station", "town"])
+                             "station", "town", "temptop-2daysago"])
     ap.add_argument("--force", action="store_true")
     args = ap.parse_args()
 
@@ -72,8 +72,8 @@ def main() -> int:
             folder = sites.probe(page, t)
             print(f"探勘結果：{folder}")
 
-        elif mode in ("temptop-today", "temptop-yesterday"):
-            which = "今日" if mode == "temptop-today" else "昨日"
+        elif mode in ("temptop-today", "temptop-yesterday", "temptop-2daysago"):
+            which = {"temptop-today": "今日", "temptop-yesterday": "昨日", "temptop-2daysago": "前日"}[mode]
             res = with_retry(lambda: sites.run_temptop(page, t, which), "縣市溫度極值", errors)
             if res:
                 day, rows = res
