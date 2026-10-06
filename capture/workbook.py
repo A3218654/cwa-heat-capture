@@ -172,12 +172,50 @@ def _style_grid(ws, ncols: int, header_fill, first_col_fill=None, widths=None) -
     ws.freeze_panes = "C2" if ncols > 5 else "A2"
 
 
-def write_w29_daily_sheet(ws, day: str, rec: dict | None, county: str) -> None:
+def record_row(day: str, rec: dict | None, county: str) -> list:
+    return [int(day[5:7]), int(day[8:10]), rec["最高溫"] if rec else None, county]
+
+
+def write_record_sheet(ws, rows: list[list]) -> None:
+    """高溫紀錄表：月份／日期／最高溫／燈號（每日檔與總表共用）。"""
     ws.append(["月份", "日期", "最高溫", "燈號"])
-    ws.append([int(day[5:7]), int(day[8:10]), rec["最高溫"] if rec else None, county])
+    for r in rows:
+        ws.append(r)
     _style_grid(ws, 4, PEACH, PEACH, {1: 10, 2: 10, 3: 12, 4: 12})
-    ws["C2"].number_format = "0.0"
-    _light_cells(ws, "D2:D2")
+    last = max(ws.max_row, 2)
+    for (c,) in ws.iter_rows(min_row=2, max_row=last, min_col=3, max_col=3):
+        c.number_format = "0.0"
+    _light_cells(ws, f"D2:D{last}")
+
+
+def write_w29_daily_sheet(ws, day: str, rec: dict | None, county: str) -> None:
+    write_record_sheet(ws, [record_row(day, rec, county)])
+
+
+def update_record_master(day: str) -> bool:
+    """高溫紀錄表總表：每年一個分頁，每天一列（最高溫取縣市溫度極值定案值，燈號取 9–14 時臺北市最高燈號）。"""
+    _, rows = _read_csv(common.csv_path(day))
+    rec = temptop_record(day, rows)
+    has_w29 = any("高溫資訊" in r.get("網站", "") and r.get("關鍵時段內") == "是" for r in rows)
+    if not rec and not has_w29:
+        return False
+    county, _ = w29_summary(rows)
+    path = os.path.join(config.OUT_DIR, config.MASTER_RECORD_XLSX)
+    exists = os.path.exists(path)
+    wb = load_workbook(path) if exists else Workbook()
+    if not exists:
+        wb.remove(wb.active)
+    year = day[:4]
+    data = {}
+    if year in wb.sheetnames:
+        for vals in wb[year].iter_rows(min_row=2, values_only=True):
+            if vals and vals[0] is not None:
+                data[(int(vals[0]), int(vals[1]))] = list(vals[:4])
+        del wb[year]
+    data[(int(day[5:7]), int(day[8:10]))] = record_row(day, rec, county)
+    write_record_sheet(wb.create_sheet(year), [data[k] for k in sorted(data)])
+    finalize_master(wb, path)
+    return True
 
 
 def w29_district_row(day: str, towns: dict[str, str]) -> list:
@@ -364,6 +402,20 @@ README = {
             ("核對資料", "氣象資料開放平臺 O-A0001-001 氣象觀測站-全測站逐時氣象資料（取臺北市各站當日最高溫核對）"),
             ("核對資料網址", "https://opendata.cwa.gov.tw/dataset/observation/O-A0001-001"),
             ("截圖資料夾", "每日資料夾／1_縣市溫度極值"),
+        ],
+    },
+    config.MASTER_RECORD_XLSX: {
+        "title": "高溫紀錄表總表",
+        "rows": [
+            ("記錄內容", "每日臺北市最高溫與當天臺北市高溫燈號"),
+            ("最高溫來源", "縣市溫度極值（選「高溫」），採隔天擷取的「昨日」定案值；詳見「縣市溫度極值總表」"),
+            ("最高溫網址", config.URL_TEMPTOP),
+            ("燈號來源", "高溫資訊（地點切換：臺北市），取 9:00–14:00 關鍵時段內臺北市出現過的最高燈號；「–」表示無燈號"),
+            ("燈號網址", config.URL_W29),
+            ("燈號定義", "黃燈：氣溫達 36°C 以上；橙燈：達 36°C 以上且持續 3 天以上，或達 38°C 以上；紅燈：達 38°C 以上且持續 3 天以上"),
+            ("產品說明文件", "https://www.cwa.gov.tw/V8/assets/pdf/HeatInformation_ProductDescription.pdf"),
+            ("更新時間", "燈號於當天 9–14 時檢查後更新；最高溫於當晚 23:55 先填入，隔天 00:30 以定案值覆蓋"),
+            ("截圖資料夾", "每日資料夾／1_縣市溫度極值、2_高溫資訊"),
         ],
     },
     config.MASTER_W29_XLSX: {
@@ -559,6 +611,8 @@ def refresh(days: list[str]) -> list[str]:
                 done.append(f"紀錄_{day}.xlsx")
             if update_master(day):
                 done.append(f"{config.MASTER_TOWN_XLSX}［{day}］")
+            if update_record_master(day):
+                done.append(f"{config.MASTER_RECORD_XLSX}［{day}］")
             if update_w29_master(day):
                 done.append(f"{config.MASTER_W29_XLSX}［{day}］")
             if update_health_master(day):
