@@ -178,10 +178,23 @@ def run_town(page: Page, t, state: dict, force: bool = False) -> list[dict]:
         try:
             if i > 0:
                 open_page(page, config.URL_TOWN.format(tid=code))
-            page.locator("#Tab_24hrTable").first.click(timeout=10_000)
-            settle(page, 2000)
             first = f"{config.TOWN_HOURS[0]:02d}:00"
-            bottom = _scroll_table_to(page, first)
+            bottom = None
+            for attempt in range(3):  # 表格有時載入較慢：等待後重試，必要時重新開頁
+                if attempt == 2:
+                    open_page(page, config.URL_TOWN.format(tid=code))
+                page.locator("#Tab_24hrTable").first.click(timeout=10_000)
+                try:
+                    page.wait_for_function(
+                        """(label) => [...document.querySelectorAll('th,td')]
+                            .some(e => e.offsetParent && e.innerText.trim() === label)""",
+                        arg=first, timeout=15_000)
+                except Exception:  # noqa: BLE001
+                    pass
+                settle(page, 1000)
+                bottom = _scroll_table_to(page, first)
+                if bottom is not None:
+                    break
             if bottom is None:
                 raise RuntimeError(f"表格中找不到 {first} 欄")
             path = os.path.join(out, f"{t:%H%M}_體感溫度_臺北市{name}.png")
