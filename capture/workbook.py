@@ -606,6 +606,9 @@ def update_temptop_master(day: str) -> bool:
 def refresh(days: list[str]) -> list[str]:
     done = []
     for day in sorted(set(days)):
+        if day in common.UNSYNCED or common.raw_rel(day, f"每日紀錄_{day}.csv") in common.PULL_FAILED:
+            print(f"[試算表] {day} 的紀錄沒有完整下載，本次不更新試算表")
+            continue
         try:
             if build_daily(day):
                 done.append(f"紀錄_{day}.xlsx")

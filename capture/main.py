@@ -118,8 +118,11 @@ def main() -> int:
 
     common.save_state(state)
     if mode != "probe":
-        workbook.refresh(touched)
+        synced = common.sync_raw(touched)   # 先與雲端合併 CSV（只增不減）
+        workbook.refresh(synced)
     uploaded = common.push_all()
+    if common.UNSYNCED:
+        errors.append(f"無法與雲端紀錄合併，已改存補件檔，下次執行會自動合併：{sorted(common.UNSYNCED)}")
     if not common.rclone_available() and mode != "probe" and not os.environ.get("ALLOW_NO_UPLOAD"):
         errors.append("尚未設定 Google Drive（GDRIVE_TOKEN / GDRIVE_FOLDER_ID），本次結果沒有存檔")
 

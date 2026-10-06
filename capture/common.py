@@ -202,8 +202,30 @@ def _rclone(*args: str) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, capture_output=True, text=True)
 
 
+# 下載失敗（雲端有檔案但沒下載成功）的相對路徑；這些檔案本次一律不覆蓋
+PULL_FAILED: set[str] = set()
+# 本次無法與雲端合併的日期（CSV 改存補件檔，試算表本次不更新）
+UNSYNCED: set[str] = set()
+
+
+def _fetch(rel: str, local: str) -> str:
+    """下載單一檔案，回傳 ok／missing／failed。"""
+    os.makedirs(os.path.dirname(local) or ".", exist_ok=True)
+    for attempt in range(3):
+        res = _rclone("copyto", f"{config.RCLONE_REMOTE}{rel}", local)
+        if res.returncode == 0:
+            return "ok" if os.path.exists(local) else "missing"
+        err = res.stderr.lower()
+        if "not found" in err or "doesn't exist" in err:
+            return "missing"
+        import time
+        time.sleep(5 * (attempt + 1))
+    print(f"[rclone] 下載失敗：{rel}\n{res.stderr[-800:]}")
+    return "failed"
+
+
 def pull_existing(days: list[str]) -> None:
-    """執行前先把雲端上的狀態檔與當日 CSV 拉下來，才能接續追加。"""
+    """執行前先把雲端上的狀態檔、當日 CSV 與總表拉下來。下載失敗的檔案會記下來，本次不會覆蓋它。"""
     if not rclone_available():
         print("[rclone] 未設定，略過下載（僅本機輸出）")
         return
@@ -212,28 +234,128 @@ def pull_existing(days: list[str]) -> None:
     for day in days:
         for name in (f"每日紀錄_{day}.csv", f"體感溫度_{day}.csv"):
             rel = raw_rel(day, name)
-            local = os.path.join(config.OUT_DIR, rel)
-            os.makedirs(os.path.dirname(local), exist_ok=True)
-            _rclone("copyto", f"{r}{rel}", local)
-    # 最外層的總表
+            if _fetch(rel, os.path.join(config.OUT_DIR, rel)) == "failed":
+                PULL_FAILED.add(rel)
     os.makedirs(config.OUT_DIR, exist_ok=True)
-    for name in (config.MASTER_TOWN_XLSX, config.MASTER_TEMPTOP_XLSX, config.MASTER_W29_XLSX,
-                 config.MASTER_HEALTH_XLSX, config.MASTER_STATION_XLSX,
-                 config.MASTER_RECORD_XLSX):
-        _rclone("copyto", f"{r}{name}", os.path.join(config.OUT_DIR, name))
+    for name in MASTER_FILES():
+        if _fetch(name, os.path.join(config.OUT_DIR, name)) == "failed":
+            PULL_FAILED.add(name)
+
+
+def MASTER_FILES() -> tuple:
+    return (config.MASTER_TOWN_XLSX, config.MASTER_TEMPTOP_XLSX, config.MASTER_W29_XLSX,
+            config.MASTER_HEALTH_XLSX, config.MASTER_STATION_XLSX, config.MASTER_RECORD_XLSX)
+
+
+def _read_rows(path: str) -> list[dict]:
+    if not os.path.exists(path):
+        return []
+    with open(path, encoding="utf-8-sig") as f:
+        return list(csv.DictReader(f))
+
+
+def _write_rows(path: str, rows: list[dict]) -> None:
+    with open(path, "w", newline="", encoding="utf-8-sig") as f:
+        w = csv.DictWriter(f, fieldnames=CSV_FIELDS, extrasaction="ignore")
+        w.writeheader()
+        for r in rows:
+            w.writerow({k: r.get(k, "") for k in CSV_FIELDS})
+
+
+def union_rows(*groups: list[dict]) -> list[dict]:
+    """合併多份紀錄，完全相同的列只留一份，依記錄時間排序（只增不減）。"""
+    seen, out = set(), []
+    for rows in groups:
+        for r in rows:
+            key = tuple(r.get(k, "") for k in CSV_FIELDS)
+            if key not in seen:
+                seen.add(key)
+                out.append(r)
+    out.sort(key=lambda r: r.get("記錄時間", ""))
+    return out
+
+
+def sync_raw(days: list[str]) -> list[str]:
+    """上傳前重新下載雲端 CSV 與本機合併後再上傳，確保不會蓋掉雲端已有的紀錄。
+    下載失敗時改存成補件檔（下次合併），回傳可安全更新試算表的日期。"""
+    if not rclone_available():
+        return list(days)
+    import tempfile
+    from datetime import datetime as _dt
+    r = config.RCLONE_REMOTE
+    ok_days = []
+    for day in days:
+        local = csv_path(day)
+        rel = raw_rel(day, f"每日紀錄_{day}.csv")
+        tmp = tempfile.mkdtemp()
+        remote_copy = os.path.join(tmp, "remote.csv")
+        state = _fetch(rel, remote_copy)
+        if state == "failed":
+            if os.path.exists(local):
+                pend = raw_rel(day, f"每日紀錄_{day}_補件_{_dt.now(TZ):%H%M%S}.csv")
+                _rclone("copyto", local, f"{r}{pend}")
+                print(f"[同步] {day} 無法下載雲端紀錄，本次資料改存補件檔 {pend}")
+            UNSYNCED.add(day)
+            continue
+        # 一併收進之前留下的補件檔
+        pend_dir = os.path.join(tmp, "pending")
+        listing = _rclone("lsf", f"{r}{common_dir(day)}", "--include", f"每日紀錄_{day}_補件_*.csv")
+        pend_names = [x for x in listing.stdout.split() if x]
+        pend_rows = []
+        for name in pend_names:
+            if _fetch(f"{common_dir(day)}/{name}", os.path.join(pend_dir, name)) == "ok":
+                pend_rows.append(_read_rows(os.path.join(pend_dir, name)))
+        merged = union_rows(_read_rows(remote_copy), *pend_rows, _read_rows(local))
+        if not merged:
+            ok_days.append(day)
+            continue
+        _write_rows(local, merged)
+        res = _rclone("copyto", local, f"{r}{rel}")
+        if res.returncode != 0:
+            print(f"[同步] {day} 上傳失敗：{res.stderr[-500:]}")
+            UNSYNCED.add(day)
+            continue
+        for name in pend_names:
+            _rclone("deletefile", f"{r}{common_dir(day)}/{name}")
+        ok_days.append(day)
+    return ok_days
+
+
+def common_dir(day: str) -> str:
+    return f"{RAW_DIR}/{day[:7]}/{day}"
 
 
 def push_all() -> bool:
+    """上傳截圖與試算表。CSV 由 sync_raw 負責；下載失敗的總表與未同步日期的試算表本次不上傳。"""
     if not rclone_available():
         print("[rclone] 未設定，略過上傳")
         return True
     r = config.RCLONE_REMOTE
+    excludes = ["--exclude", f"/{RAW_DIR}/**"]
+    for rel in sorted(PULL_FAILED):
+        excludes += ["--exclude", f"/{rel}"]
+    for day in sorted(UNSYNCED):
+        excludes += ["--exclude", f"/{day[:7]}/{day}/紀錄_{day}.xlsx"]
     ok = True
-    for args in (("copy", config.OUT_DIR, r), ("copy", config.STATE_DIR, f"{r}_state")):
+    for args in (("copy", config.OUT_DIR, r, *excludes), ("copy", config.STATE_DIR, f"{r}_state")):
         res = _rclone(*args)
         if res.returncode != 0:
             ok = False
-            print(f"[rclone] 上傳失敗：{' '.join(args)}\n{res.stderr[-2000:]}")
+            print(f"[rclone] 上傳失敗：{' '.join(args[:3])}\n{res.stderr[-2000:]}")
+    # 體感溫度 CSV（每次整份重寫）與其他原始檔：只上傳本機有、且不是下載失敗的
+    raw_root = os.path.join(config.OUT_DIR, RAW_DIR)
+    for root, _, files in os.walk(raw_root):
+        for name in files:
+            if not name.startswith("體感溫度_"):
+                continue
+            local = os.path.join(root, name)
+            rel = os.path.relpath(local, config.OUT_DIR).replace(os.sep, "/")
+            if rel in PULL_FAILED:
+                continue
+            res = _rclone("copyto", local, f"{r}{rel}")
+            ok = ok and res.returncode == 0
     if ok:
         print("[rclone] 已上傳到 Google Drive")
+    if PULL_FAILED or UNSYNCED:
+        print(f"[rclone] 本次為保護既有資料而略過：{sorted(PULL_FAILED)} {sorted(UNSYNCED)}")
     return ok
