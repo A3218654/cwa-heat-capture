@@ -197,7 +197,8 @@ def pull_existing(days: list[str]) -> None:
             _rclone("copyto", f"{r}{rel}", local)
     # 最外層的總表
     os.makedirs(config.OUT_DIR, exist_ok=True)
-    _rclone("copyto", f"{r}{config.MASTER_TOWN_XLSX}", os.path.join(config.OUT_DIR, config.MASTER_TOWN_XLSX))
+    for name in (config.MASTER_TOWN_XLSX, config.MASTER_TEMPTOP_XLSX):
+        _rclone("copyto", f"{r}{name}", os.path.join(config.OUT_DIR, name))
 
 
 def push_all() -> bool:

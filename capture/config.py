@@ -42,6 +42,7 @@ DISTRICT_SCREENSHOTS = os.environ.get("DISTRICT_SCREENSHOTS", "true").lower() ==
 
 # ---- 輸出 ----
 MASTER_TOWN_XLSX = "體感溫度總表.xlsx"   # Drive 最外層，每天一個分頁
+MASTER_TEMPTOP_XLSX = "縣市溫度極值總表.xlsx"  # Drive 最外層，每年一個分頁、每天一列
 OUT_DIR = os.environ.get("OUT_DIR", "out")
 STATE_DIR = os.environ.get("STATE_DIR", "state")
 # rclone 遠端名稱（由環境變數 RCLONE_CONFIG_GDRIVE_* 設定，見 README）

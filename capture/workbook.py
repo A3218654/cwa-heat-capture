@@ -69,7 +69,8 @@ BOX = Border(left=THIN, right=THIN, top=THIN, bottom=THIN)
 
 
 def _one_line(v: str) -> str:
-    return "、".join(x.strip() for x in str(v).splitlines() if x.strip())
+    """多個測站同為最高溫時，每個一行（時間與測站上下對應）。"""
+    return "\n".join(x.strip() for x in str(v).splitlines() if x.strip())
 
 
 def temptop_record(day: str, rows: list[dict]) -> dict | None:
@@ -97,11 +98,13 @@ def write_temptop_sheet(ws, records: list[dict]) -> None:
     for rec in records:
         ws.append([rec[h] for h in headers])
     for row in ws.iter_rows(min_row=1, max_row=ws.max_row, max_col=len(headers)):
+        lines = max(str(c.value or "").count("\n") + 1 for c in row)
+        ws.row_dimensions[row[0].row].height = 20 * lines
         for c in row:
-            c.alignment = Alignment(horizontal="center", vertical="center")
+            c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
             c.font = Font(size=12)
             c.border = BOX
-            if c.row == 1:
+            if c.row == 1 or c.column == 1:
                 c.fill = PEACH
             if c.column == 3 and c.row > 1:
                 c.number_format = "0.0"
@@ -159,6 +162,35 @@ def update_master(day: str) -> bool:
     return True
 
 
+def update_temptop_master(day: str) -> bool:
+    """縣市溫度極值總表：每年一個分頁，每天一列，依日期排序；同一天重抓會覆蓋。"""
+    fields, rows = _read_csv(common.csv_path(day))
+    rec = temptop_record(day, rows)
+    if not rec:
+        return False
+    path = os.path.join(config.OUT_DIR, config.MASTER_TEMPTOP_XLSX)
+    wb = load_workbook(path) if os.path.exists(path) else Workbook()
+    if not os.path.exists(path):
+        wb.remove(wb.active)
+    year = day[:4]
+    existing = {}
+    if year in wb.sheetnames:
+        ws = wb[year]
+        hdr = [c.value for c in ws[1]]
+        for vals in ws.iter_rows(min_row=2, values_only=True):
+            if vals and vals[0] is not None:
+                r = dict(zip(hdr, vals))
+                existing[(int(r["月份"]), int(r["日期"]))] = r
+        del wb[year]
+    existing[(rec["月份"], rec["日期"])] = rec
+    ws = wb.create_sheet(year)
+    write_temptop_sheet(ws, [existing[k] for k in sorted(existing)])
+    wb._sheets.sort(key=lambda s: s.title, reverse=True)
+    wb.active = 0
+    wb.save(path)
+    return True
+
+
 def refresh(days: list[str]) -> list[str]:
     done = []
     for day in sorted(set(days)):
@@ -167,6 +199,8 @@ def refresh(days: list[str]) -> list[str]:
                 done.append(f"紀錄_{day}.xlsx")
             if update_master(day):
                 done.append(f"{config.MASTER_TOWN_XLSX}［{day}］")
+            if update_temptop_master(day):
+                done.append(f"{config.MASTER_TEMPTOP_XLSX}［{day}］")
         except Exception as e:  # noqa: BLE001  試算表失敗不影響截圖與 CSV
             print(f"[試算表] {day} 產生失敗：{e}")
     print("[試算表] 已更新：", "、".join(done) or "無")
