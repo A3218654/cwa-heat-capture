@@ -12,7 +12,9 @@ import os
 import sys
 
 from openpyxl import Workbook, load_workbook
-from openpyxl.styles import Alignment, Font, PatternFill
+import re
+
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
 from . import common, config
@@ -22,7 +24,6 @@ HEADER_FONT = Font(bold=True, color="FFFFFF")
 
 # 分頁名稱 → CSV「網站」欄的關鍵字
 SHEETS = [
-    ("縣市溫度極值", "縣市溫度極值"),
     ("高溫資訊", "高溫資訊"),
     ("熱傷害", "熱傷害"),
     ("臺北測站", "臺北測站"),
@@ -61,6 +62,54 @@ def _num(v):
     return v
 
 
+# ------------------------------------------------------------------ 縣市溫度極值（使用者指定格式）
+PEACH = PatternFill("solid", fgColor="FCE4D6")
+THIN = Side(style="thin", color="D9A08B")
+BOX = Border(left=THIN, right=THIN, top=THIN, bottom=THIN)
+
+
+def _one_line(v: str) -> str:
+    return "、".join(x.strip() for x in str(v).splitlines() if x.strip())
+
+
+def temptop_record(day: str, rows: list[dict]) -> dict | None:
+    """取當天的定案值：優先用隔天截的「昨日／前日」，沒有才用當天最後一次「今日」。"""
+    cand = [r for r in rows if "縣市溫度極值" in r.get("網站", "") and r.get("狀態", "").startswith("已截圖")
+            and f"資料日期{day}" in r.get("補充說明", "")]
+    if not cand:
+        return None
+    final = [r for r in cand if "(今日)" not in r.get("補充說明", "")]
+    r = (final or cand)[-1]
+    note = r.get("補充說明", "")
+    tm = re.search(r"觀測時間([^；]+)", note)
+    st = re.search(r"測站(.+?)\(", note, re.S)
+    return {
+        "月份": int(day[5:7]), "日期": int(day[8:10]), "最高溫": _num(r.get("數值", "")),
+        "時間": _one_line(tm.group(1)) if tm else "",
+        "測站": _one_line(st.group(1)) if st else "",
+        "截圖": r.get("截圖檔名", ""),
+    }
+
+
+def write_temptop_sheet(ws, records: list[dict]) -> None:
+    headers = ["月份", "日期", "最高溫", "時間", "測站"]
+    ws.append(headers)
+    for rec in records:
+        ws.append([rec[h] for h in headers])
+    for row in ws.iter_rows(min_row=1, max_row=ws.max_row, max_col=len(headers)):
+        for c in row:
+            c.alignment = Alignment(horizontal="center", vertical="center")
+            c.font = Font(size=12)
+            c.border = BOX
+            if c.row == 1:
+                c.fill = PEACH
+            if c.column == 3 and c.row > 1:
+                c.number_format = "0.0"
+    for col, w in zip("ABCDE", (10, 10, 12, 14, 18)):
+        ws.column_dimensions[col].width = w
+    ws.freeze_panes = "A2"
+
+
 def _town_rows(day: str) -> tuple[list[str], list[list]]:
     fields, rows = _read_csv(os.path.join(common.day_dir(day), f"體感溫度_{day}.csv"))
     return fields, [[r.get(f, "") for f in fields] for r in rows]
@@ -73,6 +122,8 @@ def build_daily(day: str) -> str | None:
         return None
     wb = Workbook()
     wb.remove(wb.active)
+    rec = temptop_record(day, rows)
+    write_temptop_sheet(wb.create_sheet("縣市溫度極值"), [rec] if rec else [])
     cols = [f for f in fields if f not in DROP_COLS]
     for title, key in SHEETS:
         part = [r for r in rows if key in r.get("網站", "") and r.get("狀態") not in ("失敗",)]
