@@ -144,7 +144,7 @@ jobs:
       - name: 測試輸出推到 probe-results 分支
         if: always() && (inputs.mode == 'probe' || inputs.mode == 'purge' || inputs.debug)
         run: |
-          mkdir -p /tmp/pr && cp -r out/. /tmp/pr/ && cp -r state /tmp/pr/_state 2>/dev/null || true
+          mkdir -p /tmp/pr out && cp -r out/. /tmp/pr/ && cp -r state /tmp/pr/_state 2>/dev/null || true
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout --orphan probe-results
@@ -152,5 +152,5 @@ jobs:
           find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
           cp -r /tmp/pr/. .
           git add -A
-          git commit -m "debug ${{ github.run_id }}"
+          git commit -m "debug ${{ github.run_id }}" || exit 0
           git push -f origin probe-results
