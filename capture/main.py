@@ -81,10 +81,19 @@ def main() -> int:
 
         elif mode in ("temptop-today", "temptop-yesterday", "temptop-2daysago"):
             which = {"temptop-today": "今日", "temptop-yesterday": "昨日", "temptop-2daysago": "前日"}[mode]
-            res = with_retry(lambda: sites.run_temptop(page, t, which), "縣市溫度極值", errors)
+            finals = state.setdefault("temptop_final", {})
+            if which != "今日" and finals.get(data_day) and not args.force:
+                print(f"{data_day} 已有定案截圖（{finals[data_day]}），不重複擷取")
+                res = None
+            else:
+                res = with_retry(lambda: sites.run_temptop(page, t, which), "縣市溫度極值", errors)
             if res:
                 day, rows = res
                 common.append_rows(day, rows)
+                if which != "今日":
+                    finals[day] = common.stamp(t)
+                    for d in sorted(finals)[:-14]:
+                        finals.pop(d, None)
             if mode == "temptop-today":  # 當天最後一次機會：補抓漏掉的測站整點與體感溫度
                 rows = with_retry(lambda: extra.run_station(page, t, state, final=True), "臺北測站", errors) or []
                 common.append_rows(today, rows)

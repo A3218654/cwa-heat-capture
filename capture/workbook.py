@@ -547,7 +547,7 @@ def build_daily(day: str) -> str | None:
         _write_sheet(wb.create_sheet(title), cols, [[r.get(c, "") for c in cols] for r in part])
     ws = wb.create_sheet("體感溫度")
     if t_rows:
-        _write_sheet(ws, t_fields, t_rows)
+        write_town_sheet(ws, t_fields, t_rows)
     else:
         ws.append(["今天的體感溫度尚未記錄（每天 19 時後產生）"])
     bad = [r for r in rows if r.get("狀態") in ("失敗", "缺漏") or "截圖失敗" in r.get("狀態", "")]
@@ -557,6 +557,27 @@ def build_daily(day: str) -> str | None:
     path = os.path.join(common.day_dir(day), f"紀錄_{day}.xlsx")
     wb.save(path)
     return path
+
+
+def write_town_sheet(ws, fields: list[str], rows: list[list]) -> None:
+    """體感溫度表：缺資料的小時填「–」並加註，行政區欄加寬。"""
+    _write_sheet(ws, fields, rows)
+    hour_cols = [i + 1 for i, f in enumerate(fields) if f.endswith("時")]
+    missing = False
+    for r in range(2, ws.max_row + 1):
+        for c in hour_cols:
+            cell = ws.cell(row=r, column=c)
+            if cell.value in (None, ""):
+                cell.value = "–"
+                cell.font = Font(color="999999")
+                cell.alignment = Alignment(horizontal="center")
+                missing = True
+    ws.column_dimensions["A"].width = 16
+    ws.column_dimensions["B"].width = 11
+    if missing:
+        ws.append([])
+        ws.append(["「–」＝氣象署網頁該小時顯示「-°C」（無資料），可對照 5_鄉鎮體感溫度 的截圖"])
+        ws.cell(row=ws.max_row, column=1).font = Font(color="666666", italic=True)
 
 
 def update_master(day: str) -> bool:
@@ -571,7 +592,7 @@ def update_master(day: str) -> bool:
         wb.remove(wb.active)
     if day in wb.sheetnames:
         del wb[day]
-    _write_sheet(wb.create_sheet(day), t_fields, t_rows)
+    write_town_sheet(wb.create_sheet(day), t_fields, t_rows)
     finalize_master(wb, path)  # 最新的一天放最前面
     return True
 
