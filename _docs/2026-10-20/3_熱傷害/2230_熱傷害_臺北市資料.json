@@ -1,0 +1,2899 @@
+{
+ "getWarnTown": [
+  {
+   "cityName": "臺北市",
+   "townName": "松山區",
+   "warnStatus": 0
+  },
+  {
+   "cityName": "臺北市",
+   "townName": "信義區",
+   "warnStatus": 0
+  },
+  {
+   "cityName": "臺北市",
+   "townName": "大安區",
+   "warnStatus": 0
+  },
+  {
+   "cityName": "臺北市",
+   "townName": "中山區",
+   "warnStatus": 0
+  },
+  {
+   "cityName": "臺北市",
+   "townName": "中正區",
+   "warnStatus": 0
+  },
+  {
+   "cityName": "臺北市",
+   "townName": "大同區",
+   "warnStatus": 0
+  },
+  {
+   "cityName": "臺北市",
+   "townName": "萬華區",
+   "warnStatus": 0
+  },
+  {
+   "cityName": "臺北市",
+   "townName": "文山區",
+   "warnStatus": 0
+  },
+  {
+   "cityName": "臺北市",
+   "townName": "南港區",
+   "warnStatus": 0
+  },
+  {
+   "cityName": "臺北市",
+   "townName": "內湖區",
+   "warnStatus": 0
+  },
+  {
+   "cityName": "臺北市",
+   "townName": "士林區",
+   "warnStatus": 0
+  },
+  {
+   "cityName": "臺北市",
+   "townName": "北投區",
+   "warnStatus": 0
+  }
+ ],
+ "dailyHealthUpdateTime": "2026-10-20 22:00:28",
+ "getUserRiskForecast": [
+  {
+   "healthName": "熱傷害",
+   "city": "臺北市",
+   "town": "南港區",
+   "dailyHealth": [
+    {
+     "dt": "2026-10-21 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-21 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-21 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 28
+    },
+    {
+     "dt": "2026-10-21 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 28
+    },
+    {
+     "dt": "2026-10-21 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-21 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-21 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 21
+    },
+    {
+     "dt": "2026-10-22 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 19
+    },
+    {
+     "dt": "2026-10-22 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 21
+    },
+    {
+     "dt": "2026-10-22 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 21
+    },
+    {
+     "dt": "2026-10-23 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-23 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-23 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-23 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-23 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-23 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-23 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-24 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-25 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 29
+    },
+    {
+     "dt": "2026-10-25 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    }
+   ],
+   "dailyHealthUpdateTime": "2026-10-20 22:00:28",
+   "weeklyHealth": [
+    {
+     "dataTime": "2026-10-21",
+     "wbgt": 28,
+     "warnStatus": 0,
+     "weatherCode": "08"
+    },
+    {
+     "dataTime": "2026-10-22",
+     "wbgt": 24,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-23",
+     "wbgt": 27,
+     "warnStatus": 0,
+     "weatherCode": "14"
+    },
+    {
+     "dataTime": "2026-10-24",
+     "wbgt": 26,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-25",
+     "wbgt": 29,
+     "warnStatus": 0,
+     "weatherCode": "04"
+    }
+   ],
+   "weeklyHealthUpdateTime": "2026-10-20 22:00:28"
+  },
+  {
+   "healthName": "熱傷害",
+   "city": "臺北市",
+   "town": "中山區",
+   "dailyHealth": [
+    {
+     "dt": "2026-10-21 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-21 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 29
+    },
+    {
+     "dt": "2026-10-21 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 29
+    },
+    {
+     "dt": "2026-10-21 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-21 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 28
+    },
+    {
+     "dt": "2026-10-23 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 28
+    },
+    {
+     "dt": "2026-10-23 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-23 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-25 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-25 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-25 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    }
+   ],
+   "dailyHealthUpdateTime": "2026-10-20 22:00:28",
+   "weeklyHealth": [
+    {
+     "dataTime": "2026-10-21",
+     "wbgt": 29,
+     "warnStatus": 0,
+     "weatherCode": "08"
+    },
+    {
+     "dataTime": "2026-10-22",
+     "wbgt": 24,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-23",
+     "wbgt": 28,
+     "warnStatus": 0,
+     "weatherCode": "14"
+    },
+    {
+     "dataTime": "2026-10-24",
+     "wbgt": 26,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-25",
+     "wbgt": 26,
+     "warnStatus": 0,
+     "weatherCode": "08"
+    }
+   ],
+   "weeklyHealthUpdateTime": "2026-10-20 22:00:28"
+  },
+  {
+   "healthName": "熱傷害",
+   "city": "臺北市",
+   "town": "松山區",
+   "dailyHealth": [
+    {
+     "dt": "2026-10-21 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 28
+    },
+    {
+     "dt": "2026-10-21 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 29
+    },
+    {
+     "dt": "2026-10-21 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 29
+    },
+    {
+     "dt": "2026-10-21 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-21 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-22 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-23 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-23 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 28
+    },
+    {
+     "dt": "2026-10-23 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-23 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-24 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 29
+    },
+    {
+     "dt": "2026-10-25 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-25 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    }
+   ],
+   "dailyHealthUpdateTime": "2026-10-20 22:00:28",
+   "weeklyHealth": [
+    {
+     "dataTime": "2026-10-21",
+     "wbgt": 29,
+     "warnStatus": 0,
+     "weatherCode": "08"
+    },
+    {
+     "dataTime": "2026-10-22",
+     "wbgt": 25,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-23",
+     "wbgt": 28,
+     "warnStatus": 0,
+     "weatherCode": "14"
+    },
+    {
+     "dataTime": "2026-10-24",
+     "wbgt": 26,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-25",
+     "wbgt": 29,
+     "warnStatus": 0,
+     "weatherCode": "03"
+    }
+   ],
+   "weeklyHealthUpdateTime": "2026-10-20 22:00:28"
+  },
+  {
+   "healthName": "熱傷害",
+   "city": "臺北市",
+   "town": "文山區",
+   "dailyHealth": [
+    {
+     "dt": "2026-10-21 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-21 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-21 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-21 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-21 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-21 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-21 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-21 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 21
+    },
+    {
+     "dt": "2026-10-22 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 21
+    },
+    {
+     "dt": "2026-10-22 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-23 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-23 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-23 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-23 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-23 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-24 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-24 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-24 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 30
+    },
+    {
+     "dt": "2026-10-25 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-25 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    }
+   ],
+   "dailyHealthUpdateTime": "2026-10-20 22:00:28",
+   "weeklyHealth": [
+    {
+     "dataTime": "2026-10-21",
+     "wbgt": 27,
+     "warnStatus": 0,
+     "weatherCode": "08"
+    },
+    {
+     "dataTime": "2026-10-22",
+     "wbgt": 23,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-23",
+     "wbgt": 27,
+     "warnStatus": 0,
+     "weatherCode": "14"
+    },
+    {
+     "dataTime": "2026-10-24",
+     "wbgt": 26,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-25",
+     "wbgt": 30,
+     "warnStatus": 0,
+     "weatherCode": "04"
+    }
+   ],
+   "weeklyHealthUpdateTime": "2026-10-20 22:00:28"
+  },
+  {
+   "healthName": "熱傷害",
+   "city": "臺北市",
+   "town": "士林區",
+   "dailyHealth": [
+    {
+     "dt": "2026-10-21 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 28
+    },
+    {
+     "dt": "2026-10-21 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 29
+    },
+    {
+     "dt": "2026-10-21 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 29
+    },
+    {
+     "dt": "2026-10-21 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-21 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-22 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-22 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 28
+    },
+    {
+     "dt": "2026-10-23 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 28
+    },
+    {
+     "dt": "2026-10-23 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-23 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-25 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    }
+   ],
+   "dailyHealthUpdateTime": "2026-10-20 22:00:28",
+   "weeklyHealth": [
+    {
+     "dataTime": "2026-10-21",
+     "wbgt": 29,
+     "warnStatus": 0,
+     "weatherCode": "08"
+    },
+    {
+     "dataTime": "2026-10-22",
+     "wbgt": 25,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-23",
+     "wbgt": 28,
+     "warnStatus": 0,
+     "weatherCode": "14"
+    },
+    {
+     "dataTime": "2026-10-24",
+     "wbgt": 26,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-25",
+     "wbgt": 26,
+     "warnStatus": 0,
+     "weatherCode": "08"
+    }
+   ],
+   "weeklyHealthUpdateTime": "2026-10-20 22:00:28"
+  },
+  {
+   "healthName": "熱傷害",
+   "city": "臺北市",
+   "town": "大安區",
+   "dailyHealth": [
+    {
+     "dt": "2026-10-21 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-21 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 29
+    },
+    {
+     "dt": "2026-10-21 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 29
+    },
+    {
+     "dt": "2026-10-21 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-21 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 28
+    },
+    {
+     "dt": "2026-10-23 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 28
+    },
+    {
+     "dt": "2026-10-23 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-23 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-25 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-25 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-25 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    }
+   ],
+   "dailyHealthUpdateTime": "2026-10-20 22:00:28",
+   "weeklyHealth": [
+    {
+     "dataTime": "2026-10-21",
+     "wbgt": 29,
+     "warnStatus": 0,
+     "weatherCode": "08"
+    },
+    {
+     "dataTime": "2026-10-22",
+     "wbgt": 24,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-23",
+     "wbgt": 28,
+     "warnStatus": 0,
+     "weatherCode": "14"
+    },
+    {
+     "dataTime": "2026-10-24",
+     "wbgt": 26,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-25",
+     "wbgt": 26,
+     "warnStatus": 0,
+     "weatherCode": "08"
+    }
+   ],
+   "weeklyHealthUpdateTime": "2026-10-20 22:00:28"
+  },
+  {
+   "healthName": "熱傷害",
+   "city": "臺北市",
+   "town": "萬華區",
+   "dailyHealth": [
+    {
+     "dt": "2026-10-21 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-21 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 29
+    },
+    {
+     "dt": "2026-10-21 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 29
+    },
+    {
+     "dt": "2026-10-21 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-21 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 28
+    },
+    {
+     "dt": "2026-10-23 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 28
+    },
+    {
+     "dt": "2026-10-23 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-23 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-25 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-25 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-25 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    }
+   ],
+   "dailyHealthUpdateTime": "2026-10-20 22:00:28",
+   "weeklyHealth": [
+    {
+     "dataTime": "2026-10-21",
+     "wbgt": 29,
+     "warnStatus": 0,
+     "weatherCode": "08"
+    },
+    {
+     "dataTime": "2026-10-22",
+     "wbgt": 24,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-23",
+     "wbgt": 28,
+     "warnStatus": 0,
+     "weatherCode": "14"
+    },
+    {
+     "dataTime": "2026-10-24",
+     "wbgt": 26,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-25",
+     "wbgt": 26,
+     "warnStatus": 0,
+     "weatherCode": "08"
+    }
+   ],
+   "weeklyHealthUpdateTime": "2026-10-20 22:00:28"
+  },
+  {
+   "healthName": "熱傷害",
+   "city": "臺北市",
+   "town": "中正區",
+   "dailyHealth": [
+    {
+     "dt": "2026-10-21 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-21 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 29
+    },
+    {
+     "dt": "2026-10-21 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 29
+    },
+    {
+     "dt": "2026-10-21 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-21 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 28
+    },
+    {
+     "dt": "2026-10-23 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 28
+    },
+    {
+     "dt": "2026-10-23 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-23 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-25 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-25 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-25 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    }
+   ],
+   "dailyHealthUpdateTime": "2026-10-20 22:00:28",
+   "weeklyHealth": [
+    {
+     "dataTime": "2026-10-21",
+     "wbgt": 29,
+     "warnStatus": 0,
+     "weatherCode": "08"
+    },
+    {
+     "dataTime": "2026-10-22",
+     "wbgt": 24,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-23",
+     "wbgt": 28,
+     "warnStatus": 0,
+     "weatherCode": "14"
+    },
+    {
+     "dataTime": "2026-10-24",
+     "wbgt": 26,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-25",
+     "wbgt": 26,
+     "warnStatus": 0,
+     "weatherCode": "08"
+    }
+   ],
+   "weeklyHealthUpdateTime": "2026-10-20 22:00:28"
+  },
+  {
+   "healthName": "熱傷害",
+   "city": "臺北市",
+   "town": "內湖區",
+   "dailyHealth": [
+    {
+     "dt": "2026-10-21 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 28
+    },
+    {
+     "dt": "2026-10-21 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 29
+    },
+    {
+     "dt": "2026-10-21 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 29
+    },
+    {
+     "dt": "2026-10-21 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-21 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-22 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-23 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-23 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 28
+    },
+    {
+     "dt": "2026-10-23 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-23 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-24 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 29
+    },
+    {
+     "dt": "2026-10-25 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-25 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    }
+   ],
+   "dailyHealthUpdateTime": "2026-10-20 22:00:28",
+   "weeklyHealth": [
+    {
+     "dataTime": "2026-10-21",
+     "wbgt": 29,
+     "warnStatus": 0,
+     "weatherCode": "08"
+    },
+    {
+     "dataTime": "2026-10-22",
+     "wbgt": 25,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-23",
+     "wbgt": 28,
+     "warnStatus": 0,
+     "weatherCode": "14"
+    },
+    {
+     "dataTime": "2026-10-24",
+     "wbgt": 26,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-25",
+     "wbgt": 29,
+     "warnStatus": 0,
+     "weatherCode": "03"
+    }
+   ],
+   "weeklyHealthUpdateTime": "2026-10-20 22:00:28"
+  },
+  {
+   "healthName": "熱傷害",
+   "city": "臺北市",
+   "town": "大同區",
+   "dailyHealth": [
+    {
+     "dt": "2026-10-21 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-21 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 29
+    },
+    {
+     "dt": "2026-10-21 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 29
+    },
+    {
+     "dt": "2026-10-21 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-21 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 28
+    },
+    {
+     "dt": "2026-10-23 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 28
+    },
+    {
+     "dt": "2026-10-23 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-23 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-25 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-25 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-25 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    }
+   ],
+   "dailyHealthUpdateTime": "2026-10-20 22:00:28",
+   "weeklyHealth": [
+    {
+     "dataTime": "2026-10-21",
+     "wbgt": 29,
+     "warnStatus": 0,
+     "weatherCode": "08"
+    },
+    {
+     "dataTime": "2026-10-22",
+     "wbgt": 24,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-23",
+     "wbgt": 28,
+     "warnStatus": 0,
+     "weatherCode": "14"
+    },
+    {
+     "dataTime": "2026-10-24",
+     "wbgt": 26,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-25",
+     "wbgt": 26,
+     "warnStatus": 0,
+     "weatherCode": "08"
+    }
+   ],
+   "weeklyHealthUpdateTime": "2026-10-20 22:00:28"
+  },
+  {
+   "healthName": "熱傷害",
+   "city": "臺北市",
+   "town": "信義區",
+   "dailyHealth": [
+    {
+     "dt": "2026-10-21 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-21 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 29
+    },
+    {
+     "dt": "2026-10-21 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 29
+    },
+    {
+     "dt": "2026-10-21 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-21 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-21 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-22 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-22 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-23 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 28
+    },
+    {
+     "dt": "2026-10-23 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-23 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-25 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    }
+   ],
+   "dailyHealthUpdateTime": "2026-10-20 22:00:28",
+   "weeklyHealth": [
+    {
+     "dataTime": "2026-10-21",
+     "wbgt": 29,
+     "warnStatus": 0,
+     "weatherCode": "08"
+    },
+    {
+     "dataTime": "2026-10-22",
+     "wbgt": 25,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-23",
+     "wbgt": 28,
+     "warnStatus": 0,
+     "weatherCode": "14"
+    },
+    {
+     "dataTime": "2026-10-24",
+     "wbgt": 26,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-25",
+     "wbgt": 26,
+     "warnStatus": 0,
+     "weatherCode": "04"
+    }
+   ],
+   "weeklyHealthUpdateTime": "2026-10-20 22:00:28"
+  },
+  {
+   "healthName": "熱傷害",
+   "city": "臺北市",
+   "town": "北投區",
+   "dailyHealth": [
+    {
+     "dt": "2026-10-21 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-21 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-21 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 27
+    },
+    {
+     "dt": "2026-10-21 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 28
+    },
+    {
+     "dt": "2026-10-21 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 29
+    },
+    {
+     "dt": "2026-10-21 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-21 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-21 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 21
+    },
+    {
+     "dt": "2026-10-22 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 20
+    },
+    {
+     "dt": "2026-10-22 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-22 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-22 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 21
+    },
+    {
+     "dt": "2026-10-22 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 21
+    },
+    {
+     "dt": "2026-10-23 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 22
+    },
+    {
+     "dt": "2026-10-23 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-23 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-23 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-23 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-23 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-23 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 23
+    },
+    {
+     "dt": "2026-10-24 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-24 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-24 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-24 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-24 21:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 00:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-25 03:00:00",
+     "warnStatus": 0,
+     "wbgt": 26
+    },
+    {
+     "dt": "2026-10-25 06:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-25 09:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-25 12:00:00",
+     "warnStatus": 0,
+     "wbgt": 24
+    },
+    {
+     "dt": "2026-10-25 15:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    },
+    {
+     "dt": "2026-10-25 18:00:00",
+     "warnStatus": 0,
+     "wbgt": 25
+    }
+   ],
+   "dailyHealthUpdateTime": "2026-10-20 22:00:28",
+   "weeklyHealth": [
+    {
+     "dataTime": "2026-10-21",
+     "wbgt": 29,
+     "warnStatus": 0,
+     "weatherCode": "08"
+    },
+    {
+     "dataTime": "2026-10-22",
+     "wbgt": 23,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-23",
+     "wbgt": 26,
+     "warnStatus": 0,
+     "weatherCode": "14"
+    },
+    {
+     "dataTime": "2026-10-24",
+     "wbgt": 26,
+     "warnStatus": 0,
+     "weatherCode": "11"
+    },
+    {
+     "dataTime": "2026-10-25",
+     "wbgt": 26,
+     "warnStatus": 0,
+     "weatherCode": "08"
+    }
+   ],
+   "weeklyHealthUpdateTime": "2026-10-20 22:00:28"
+  }
+ ]
+}
