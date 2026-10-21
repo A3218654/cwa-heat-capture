@@ -41,7 +41,8 @@ def main() -> int:
         common._rclone("copy", r, d, "--max-depth", "1", "--include", "*.xlsx")
         common._rclone("copy", f"{r}{common.RAW_DIR}", os.path.join(d, common.RAW_DIR))
         common._rclone("copy", f"{r}{day[:7]}/{day}", os.path.join(d, day), "--include", "*.xlsx",
-                       "--include", "*/*.jpg", "--include", "*/*.png", "--max-size", "3M")
+                       "--include", "*/*.jpg", "--include", "*/*.png", "--include", "*/*.json",
+                       "--include", "*/*.txt", "--max-size", "3M")
         prev = os.environ.get("PREV_DAY", "")
         if prev:
             common._rclone("copy", f"{r}{prev[:7]}/{prev}/1_縣市溫度極值", os.path.join(d, prev, "1_縣市溫度極值"),
